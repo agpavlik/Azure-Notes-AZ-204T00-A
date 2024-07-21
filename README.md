@@ -19,14 +19,14 @@
   - [Autoscale best practices](#1303)
 - [Azure App Service deployment slots](#14)
 
-2. [Implement Azure Functions](#15)
+2. [Azure Functions](#2)
 
-- [Explore Azure Function](#16)
-- [Develop Azure Function](#17)
+- [Explore Azure Function](#21)
+- [Develop Azure Function](#22)
 
 3. [Develop solutions that use Blob storage](#18)
 
-### 📒 Azure App Service <a name="1"></a>
+## 1. Azure App Service <a name="1"></a>
 
 ### 📒 Explore Azure App Service <a name="11"></a>
 
@@ -895,3 +895,167 @@ To let users opt in to your beta app, set the same query parameter to the name o
 ```
 
 By default, new slots are given a routing rule of 0%, a default value is displayed in grey. When you explicitly set the routing rule value to 0% it's displayed in black, your users can access the staging slot manually by using the x-ms-routing-name query parameter. But they won't be routed to the slot automatically because the routing percentage is set to 0. This is an advanced scenario where you can "hide" your staging slot from the public while allowing internal teams to test changes on the slot.
+
+---
+
+## 2. Azure Function <a name="2"></a>
+
+### 📒 Explore Azure Function <a name="21"></a>
+
+`Azure Functions` is a serverless solution that allows you to write less code, maintain less infrastructure, and save on costs. Instead of worrying about deploying and maintaining servers, the cloud infrastructure provides all the up-to-date resources needed to keep your applications running.
+
+We often build systems to react to a series of critical events. Whether you're building a web API, responding to database changes, processing IoT data streams, or even managing message queues - every application needs a way to run some code as these events occur.
+
+Azure Functions supports `triggers`, which are ways to start execution of your code, and `bindings`, which are ways to simplify coding for input and output data. There are other integration and automation services in Azure and they all can solve integration problems and automate business processes. They can all define input, actions, conditions, and output.
+
+<b>Compare Azure Functions and Azure Logic Apps</b>
+
+Both Functions and Logic Apps are Azure Services that enable serverless workloads. Azure Functions is a serverless compute service, whereas Azure Logic Apps is a serverless workflow integration platform. Both can create complex orchestrations. An `orchestration` is a collection of functions or steps, called actions in Logic Apps, that are executed to accomplish a complex task.
+
+For Azure Functions, you develop orchestrations by writing code and using the `Durable Functions extension`. For Logic Apps, you create orchestrations by using a GUI or editing configuration files.
+
+The following table lists some of the key differences between Functions and Logic Apps:
+![](images/8.png)
+
+<b>Compare Azure Functions and WebJobs</b>
+
+Like Azure Functions, Azure App Service WebJobs with the WebJobs SDK is a code-first integration service that is designed for developers. Both are built on Azure App Service and support features such as source control integration, authentication, and monitoring with Application Insights integration.
+
+Azure Functions is built on the WebJobs SDK, so it shares many of the same event triggers and connections to other Azure services. Here are some factors to consider when you're choosing between Azure Functions and WebJobs with the WebJobs SDK:
+
+![](images/9.png)
+
+Azure Functions offers more developer productivity than Azure App Service WebJobs does. It also offers more options for programming languages, development environments, Azure service integration, and pricing. For most scenarios, it's the best choice.
+
+<b>Compare Azure Functions hosting options</b>
+
+When you create a function app in Azure, you must choose a `hosting plan` for your app. Azure provides you with these hosting options for your function code:
+
+![](images/10.png)
+
+Azure App Service infrastructure facilitates Azure Functions hosting on both Linux and Windows virtual machines. The hosting option you choose dictates the following behaviors:
+
+- How your function app is scaled.
+- The resources available to each function app instance.
+- Support for advanced functionality, such as Azure Virtual Network connectivity.
+- Support for Linux containers.
+
+The plan you choose also impacts the costs for running your function code.
+
+Following is a summary of the benefits of the various hosting options:
+
+> Consumption plan
+
+The Consumption plan is the default hosting plan. Pay for compute resources only when your functions are running (pay-as-you-go) with automatic scale. On the Consumption plan, instances of the Functions host are dynamically added and removed based on the number of incoming events.
+
+> Flex Consumption plan
+
+Get high scalability with compute choices, virtual networking, and pay-as-you-go billing. On the Flex Consumption plan, instances of the Functions host are dynamically added and removed based on the configured per instance concurrency and the number of incoming events. You can reduce cold starts by specifying the number of pre-provisioned (always ready) instances. Scales automatically based on demand.
+
+> Premium plan
+
+Automatically scales based on demand using prewarmed workers, which run applications with no delay after being idle, runs on more powerful instances, and connects to virtual networks.
+
+Consider the Azure Functions Premium plan in the following situations:
+
+- Your function apps run continuously, or nearly continuously.
+- You want more control of your instances and want to deploy multiple function apps on the same plan with event-driven scaling.
+- You have a high number of small executions and a high execution bill, but low GB seconds in the Consumption plan.
+- You need more CPU or memory options than are provided by consumption plans.
+- Your code needs to run longer than the maximum execution time allowed on the Consumption plan.
+- You require virtual network connectivity.
+- You want to provide a custom Linux image in which to run your functions.
+
+> Dedicated plan
+
+Run your functions within an App Service plan at regular App Service plan rates. Best for long-running scenarios where Durable Functions can't be used.
+
+Consider an App Service plan in the following situations:
+
+- You must have fully predictable billing, or you need to manually scale instances.
+- You want to run multiple web apps and function apps on the same plan
+- You need access to larger compute size choices.
+- Full compute isolation and secure network access provided by an App Service Environment (ASE).
+- High memory usage and high scale (ASE).
+
+> Container Apps
+
+Create and deploy containerized function apps in a fully managed environment hosted by Azure Container Apps.
+
+Use the Azure Functions programming model to build event-driven, serverless, cloud native function apps. Run your functions alongside other microservices, APIs, websites, and workflows as container-hosted programs.
+
+Consider hosting your functions on Container Apps in the following situations:
+
+- You want to package custom libraries with your function code to support line-of-business apps.
+- You need to migration code execution from on-premises or legacy apps to cloud native microservices running in containers.
+- You want to avoid the overhead and complexity of managing Kubernetes clusters and dedicated compute.
+- You need the high-end processing power provided by dedicated CPU compute resources for your functions.
+
+<b>Function app timeout duration</b>
+
+The `functionTimeout` property in the `host.json` project file specifies the timeout duration for functions in a function app. This property applies specifically to function executions. After the trigger starts function execution, the function needs to return/respond within the timeout duration.
+
+The following table shows the default and maximum values (in minutes) for specific plans:
+
+![](images/11.png)
+
+1. Regardless of the function app timeout setting, 230 seconds is the maximum amount of time that an HTTP triggered function can take to respond to a request.
+2. The default timeout for version 1.x of the Functions runtime is unlimited.
+3. Guaranteed for up to 60 minutes. OS and runtime patching, vulnerability patching, and scale in behaviors can still cancel function executions.
+4. In a Flex Consumption plan, the host doesn't enforce an execution time limit. However, there are currently no guarantees because the platform might need to terminate your instances during scale-in, deployments, or to apply updates.
+5. When the minimum number of replicas is set to zero, the default timeout depends on the specific triggers used in the app.
+
+<b>Scale Azure Functions</b>
+
+The following table compares the scaling behaviors of the various hosting plans. Maximum instances are given on a per-function app (Consumption) or per-plan (Premium/Dedicated) basis, unless otherwise indicated.
+
+![](images/12.png)
+
+1. During scale-out, there's currently a limit of 500 instances per subscription per hour for Linux 1. apps on a Consumption plan.
+2. In some regions, Linux apps on a Premium plan can scale to 100 instances.
+3. For specific limits for the various App Service plan options, see the App Service plan limits.
+4. On Container Apps, you can set the maximum number of replicas, which is honored as long as there's enough cores quota available
+
+### 📒 Develop Azure Function <a name="22"></a>
+
+A function app provides an `execution context` in Azure in which your functions run. As such, it's the unit of deployment and management for your functions. A `function app` is composed of one or more individual functions that are managed, deployed, and scaled together. All of the functions in a function app share the same pricing plan, deployment method, and runtime version. Think of a function app as a way to organize and collectively manage your functions. In Functions 2.x all functions in a function app must be authored in the same language. In previous versions of the Azure Functions runtime, this wasn't required.
+
+<b>Develop and test Azure Functions locally</b>
+
+Functions make it easy to use your favorite code editor and development tools to create and test functions on your local computer. Your local functions can connect to live Azure services, and you can debug them on your local computer using the full Functions runtime.
+The way in which you develop functions on your local computer depends on your language and tooling preferences. For more information, see <a href="https://learn.microsoft.com/en-us/azure/azure-functions/functions-develop-local">Code and test Azure Functions locally</a>.
+Because of limitations on editing function code in the Azure portal, you should develop your functions locally and publish your code project to a function app in Azure.
+
+A Functions project directory contains the following files in the project root folder, regardless of language:
+
+- host.json
+- local.settings.json
+- Other files in the project depend on your language and specific functions.
+
+The `host.json` metadata file contains configuration options that affect all functions in a function app instance. Other function app configuration options are managed depending on where the function app runs:
+
+- Deployed to Azure: in your application settings
+- On your local computer: in the `local.settings.json` file.
+
+Configurations in `host.json` related to bindings are applied equally to each function in the function app. You can also override or apply settings per environment using application settings. To learn more, see <a href="https://learn.microsoft.com/en-us/azure/azure-functions/functions-host-json">the host.json reference.</a>
+
+The `local.settings.json` file stores app settings, and settings used by local development tools. Settings in the `local.settings.json` file are used only when you're running your project locally. When you publish your project to Azure, be sure to also add any required settings to the app settings for the function app. Because the `local.settings.json` may contain secrets, such as connection strings, you should never store it in a remote repository.
+
+When you develop your functions locally, any local settings required by your app must also be present in the app settings of the deployed function app. You can also download current settings from the function app to your local project.
+
+<b>Create triggers and bindings</b>
+
+S
+
+1 - 4 - 2,3 - v
+2 - 2 - 0,53 - 21
+3 - 3 - 1,19 - 21
+4 - 2 - 1,19 - 22
+5 - 3 - 1,42 - 23
+6 - 4 - 1,25 - 24
+7 - 3 - 1,05 - 25
+8 - 1 - 0,42 - 25 / 26
+9 - 2 - 0,56 - 26
+10 - 1 - 0,57 - 27
+11 - 1 - 0,24 - 27
+12 - 2 - 0,55 - 28
