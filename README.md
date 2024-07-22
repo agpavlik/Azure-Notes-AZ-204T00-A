@@ -7,7 +7,7 @@
   - [Deploy to App Service](#1102)
   - [Authentication and authorization](#1103)
   - [Networking features](#1104)
-    - [Examples](105)
+    - [Examples](#105)
 - [Configure web app settings](#12)
   - [Configure general settings](#1201)
   - [Configure path mappings](#1202)
@@ -23,6 +23,7 @@
 
 - [Explore Azure Function](#21)
 - [Develop Azure Function](#22)
+  - [Example](#221)
 
 3. [Develop solutions that use Blob storage](#18)
 
@@ -1045,7 +1046,84 @@ When you develop your functions locally, any local settings required by your app
 
 <b>Create triggers and bindings</b>
 
-S
+A `trigger` defines how a function is invoked and a function must have exactly one trigger. Triggers have associated data, which is often provided as the payload of the function.
+
+`Binding to a function` is a way of declaratively connecting another resource to the function; bindings might be connected as `input bindings`, `output bindings`, or both. Data from bindings is provided to the function as parameters. You can mix and match different bindings to suit your needs. Bindings are optional and a function might have one or multiple input and/or output bindings. Triggers and bindings let you avoid hardcoding access to other services. Your function receives data (for example, the content of a queue message) in function parameters. You send data (for example, to create a queue message) by using the return value of the function.
+
+Triggers and bindings are defined differently depending on the development language. For languages that rely on `function.json` (JavaScript/PowerShell/Python/TypeScript), the portal provides a UI for adding bindings in the Integration tab. You can also edit the file directly in the portal in the `Code + test` tab of your function.
+
+In .NET and Java, the parameter type defines the data type for input data. For instance, use `string` to bind to the text of a queue trigger, a byte array to read as binary, and a custom type to deserialize to an object. Since .NET class library functions and Java functions don't rely on function.json for binding definitions, they can't be created and edited in the portal. C# portal editing is based on C# script, which uses function.json instead of attributes.
+
+For languages that are dynamically typed such as JavaScript, use the `dataType` property in the function.json file. For example, to read the content of an HTTP request in binary format, set `dataType` to `binary`:
+
+```
+{
+    "dataType": "binary",
+    "type": "httpTrigger",
+    "name": "req",
+    "direction": "in"
+}
+```
+
+Other options for `dataType` are `stream` and `string`.
+
+<b>Binding direction</b>
+
+All triggers and bindings have a direction property in the function.json file:
+
+- For triggers, the direction is always `in`
+- Input and output bindings use `in` and `out`
+- Some bindings support a special direction `inout`. If you use inout, only the `Advanced editor` is available via the `Integrate` tab in the portal.
+
+When you use attributes in a class library to configure triggers and bindings, the direction is provided in an attribute constructor or inferred from the parameter type.
+
+<b>Connect functions to Azure services</b>
+
+As a security best practice, Azure Functions takes advantage of the application settings functionality of Azure App Service to help you more securely store strings, keys, and other tokens required to connect to other services. Application settings in Azure are stored encrypted and can be accessed at runtime by your app as environment variable `name value` pairs. For triggers and bindings that require a connection property, you set the application setting name instead of the actual connection string. You can't configure a binding directly with a connection string or key.
+
+The default configuration provider uses environment variables. These variables are defined in application settings when running in the Azure and in the local settings file when developing locally.
+
+Some connections in Azure Functions are configured to use an identity instead of a secret. Support depends on the extension using the connection. In some cases, a connection string may still be required in Functions even though the service to which you're connecting supports identity-based connections.
+
+When running in a Consumption or Elastic Premium plan, your app uses the WEBSITE_AZUREFILESCONNECTIONSTRING and WEBSITE_CONTENTSHARE settings when connecting to Azure Files on the storage account used by your function app. Azure Files doesn't support using managed identity when accessing the file share.
+
+When hosted in the Azure Functions service, identity-based connections use a managed identity. The system-assigned identity is used by default, although a user-assigned identity can be specified with the `credential` and `clientID` properties. Configuring a user-assigned identity with a resource ID is not supported. When run in other contexts, such as local development, your developer identity is used instead, although this can be customized.
+
+Identities must have permissions to perform the intended actions. This is typically done by assigning a role in Azure RBAC or specifying the identity in an access policy, depending on the service to which you're connecting.
+
+Some permissions might be exposed by the target service that are not necessary for all contexts. Where possible, adhere to the principle of least privilege, granting the identity only required privileges.
+
+### 📒 Example <a name="221"></a>
+
+Suppose you want to write a new row to Azure Table storage whenever a new message appears in Azure Queue storage. This scenario can be implemented using an Azure Queue storage trigger and an Azure Table storage output binding.
+
+Here's a function.json file for this scenario.
+
+```
+{
+  "disabled": false,
+    "bindings": [
+        {
+            "type": "queueTrigger",
+            "direction": "in",
+            "name": "myQueueItem",
+            "queueName": "myqueue-items",
+            "connection":"MyStorageConnectionAppSetting"
+        },
+        {
+          "tableName": "Person",
+          "connection": "MyStorageConnectionAppSetting",
+          "name": "tableBinding",
+          "type": "table",
+          "direction": "out"
+        }
+  ]
+}
+```
+
+The first element in the bindings array is the `Queue storage trigger`. The `type` and `direction` properties identify the trigger. The `name` property identifies the function parameter that receives the queue message content. The name of the queue to monitor is in `queueName`, and the connection string is in the app setting identified by `connection`.
+
+The second element in the bindings array is the `Azure Table Storage` output binding. The `type` and `direction` properties identify the binding. The `name` property specifies how the function provides the new table row, in this case by using the function return value. The name of the table is in `tableName`, and the connection string is in the app setting identified by `connection`.
 
 1 - 4 - 2,3 - v
 2 - 2 - 0,53 - 21
