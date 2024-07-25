@@ -32,6 +32,19 @@
 - [Manage the Azure Blob storage lifecycle](#32)
 - [Azure Blob storage client library for .NET](#33)
 - [Set and retrieve properties and metadata for blob resources by using REST](#34)
+  - [Example](#341)
+
+4. [Cosmos DB](#4)
+
+- [Explore Azure Cosmos DB](#41)
+
+5. [Implement containerized solutions](#5)
+
+6. [Implement user authentication and authorization](#6)
+
+7. [Implement secure Azure solutions](#7)
+
+8. [Implement API Management](#8)
 
 ## 1. Azure App Service <a name="1"></a>
 
@@ -1552,13 +1565,21 @@ The standard HTTP headers supported on blobs include:
 - Origin
 - Range
 
+### 📒 Examples <a name="341"></a>
+
+> 1. <a href="https://learn.microsoft.com/en-us/training/modules/work-azure-blob-storage/4-develop-blob-storage-dotnet">Create Blob storage resources by using the .NET client library</a>
+
 ---
 
 ## 4. Cosmos DB <a name="4"></a>
 
+### 📒 Explore Azure Cosmos DB <a name="41"></a>
+
+`Azure Cosmos DB` is a globally distributed database system that allows you to read and write data from the local replicas of your database and it transparently replicates the data to all the regions associated with your Cosmos account.
+
 1 - 4 - 2,30 - v
 2 - 2 - 0,53 - v
-3 - 3 - 1,19 - 21
+3 - 3 - 1,19 - v
 4 - 2 - 1,19 - 22
 5 - 3 - 1,42 - 23
 6 - 4 - 1,25 - 24
