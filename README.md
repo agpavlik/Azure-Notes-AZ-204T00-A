@@ -2,41 +2,43 @@
 
 1. [Azure App Service](#1)
 
-- [Explore Azure App Service](#11)
-  - [Service plans](#1101)
-  - [Deploy to App Service](#1102)
-  - [Authentication and authorization](#1103)
-  - [Networking features](#1104)
-    - [Examples](#105)
-- [Configure web app settings](#12)
-  - [Configure general settings](#1201)
-  - [Configure path mappings](#1202)
-  - [Enable diagnostic logging](#1203)
-  - [Configure security certificates](#1204)
-- [Scale apps in Azure App Service](#13)
-  - [Identify autoscale factors](#1301)
-  - [Enable autoscale](#1302)
-  - [Autoscale best practices](#1303)
-- [Azure App Service deployment slots](#14)
+- [Explore Azure App Service](#101)
+  - [Service plans](#1011)
+  - [Deploy to App Service](#1012)
+  - [Authentication and authorization](#1013)
+  - [Networking features](#1014)
+    - [Examples](#1015)
+- [Configure web app settings](#102)
+  - [Configure general settings](#1021)
+  - [Configure path mappings](#1022)
+  - [Enable diagnostic logging](#1023)
+  - [Configure security certificates](#1024)
+- [Scale apps in Azure App Service](#103)
+  - [Identify autoscale factors](#1031)
+  - [Enable autoscale](#1032)
+  - [Autoscale best practices](#1033)
+- [Azure App Service deployment slots](#104)
 
 2. [Functions](#2)
 
-- [Explore Azure Function](#21)
-- [Develop Azure Function](#22)
-  - [Example](#221)
+- [Explore Azure Function](#201)
+- [Develop Azure Function](#202)
+  - [Example](#2021)
 
 3. [Blob storage](#3)
 
-- [Explore Azure Blob storage](#31)
-  - [ Azure Storage security features](#311)
-- [Manage the Azure Blob storage lifecycle](#32)
-- [Azure Blob storage client library for .NET](#33)
-- [Set and retrieve properties and metadata for blob resources by using REST](#34)
-  - [Example](#341)
+- [Explore Azure Blob storage](#301)
+  - [ Azure Storage security features](#3011)
+- [Manage the Azure Blob storage lifecycle](#302)
+- [Azure Blob storage client library for .NET](#303)
+- [Set and retrieve properties and metadata for blob resources by using REST](#304)
+  - [Example](#3041)
 
 4. [Cosmos DB](#4)
 
-- [Explore Azure Cosmos DB](#41)
+- [Explore Azure Cosmos DB](#401)
+  - [Consistency levels](#4011)
+  - [Supported APIs](#4012)
 
 5. [Implement containerized solutions](#5)
 
@@ -48,7 +50,7 @@
 
 ## 1. Azure App Service <a name="1"></a>
 
-### 📒 Explore Azure App Service <a name="11"></a>
+### 📒 Explore Azure App Service <a name="101"></a>
 
 `Azure App Service` is an HTTP-based service for hosting web applications, REST APIs, and mobile back ends. You can develop in your favorite programming language or framework. Applications run and scale with ease on both Windows and Linux-based environments.
 
@@ -83,7 +85,7 @@ App Service on Linux does have some limitations:
 - The Azure portal shows only features that currently work for Linux apps. As features are enabled, they're activated on the portal.
 - When deployed to built-in images, your code and content are allocated a storage volume for web content, backed by Azure Storage. The disk latency of this volume is higher and more variable than the latency of the container filesystem. Apps that require heavy read-only access to content files may benefit from the custom container option, which places files in the container filesystem instead of on the content volume.
 
-### 📒 Service plans <a name="1101"></a>
+### 📒 Service plans <a name="1011"></a>
 
 In App Service, an app always runs in an App Service plan. An `App Service plan` defines a set of compute resources for a web app to run. One or more apps can be configured to run on the same computing resources (or in the same App Service plan).
 
@@ -129,7 +131,7 @@ Isolate your app into a new App Service plan when:
 
 This way you can allocate a new set of resources for your app and gain greater control of your apps.
 
-### 📒 Deploy to App Service <a name="1102"></a>
+### 📒 Deploy to App Service <a name="1012"></a>
 
 Every development team has unique requirements that can make implementing an efficient deployment pipeline difficult on any cloud service. App Service supports both automated and manual deployment.
 
@@ -166,7 +168,7 @@ For custom containers from Azure Container Registry or other container registrie
 - `Push the tagged image`: Once the image is built and tagged, the pipeline pushes the image to our container registry. In the next step, the deployment slot will pull the tagged image from the container registry.
 - `Update the deployment slot with the new image tag`: When this property is updated, the site will automatically restart and pull the new container image.
 
-### 📒 Authentication and authorization <a name="1103"></a>
+### 📒 Authentication and authorization <a name="1013"></a>
 
 Azure App Service provides built-in authentication and authorization support, so you can sign in users and access data by writing minimal, or no code in your web app, RESTful API, mobile back end, and Azure Functions.
 
@@ -229,7 +231,7 @@ App Service provides a built-in `token store`, which is a repository of tokens t
 
 If you enable application logging, authentication and authorization traces are collected directly in your log files. If you see an authentication error that you didn't expect, you can conveniently find all the details by looking in your existing application logs.
 
-### 📒 Networking features <a name="1104"></a>
+### 📒 Networking features <a name="1014"></a>
 
 By default, apps hosted in App Service are accessible directly through the internet and can reach only internet-hosted endpoints. But for many applications, you need to control the inbound and outbound network traffic.
 
@@ -281,7 +283,7 @@ az webapp show \
     --output tsv
 ```
 
-### 📒 Examples <a name="1105"></a>
+### 📒 Examples <a name="1015"></a>
 
 > Deploy a basic HTML+CSS site to Azure App Service by using the Azure CLI `az webapp up` command. Then update the code and redeploy it by using the same command.
 
@@ -297,7 +299,7 @@ https://learn.microsoft.com/en-us/training/modules/introduction-to-azure-app-ser
 
 ---
 
-### 📒 Configure web app settings <a name="12"></a>
+### 📒 Configure web app settings <a name="102"></a>
 
 In App Service, app settings are variables passed as environment variables to the application code. For Linux apps and custom containers, App Service passes app settings to the container using the --env flag to set the environment variable in the container.
 
@@ -331,7 +333,7 @@ Set-AzWebApp -ResourceGroupName <group-name> -Name <app-name> -AppSettings @{"DB
 When your app runs, the App Service app settings are injected into the process as environment variables automatically. You can verify container environment variables with the URL
 `https://<app-name>.scm.azurewebsites.net/Env.`
 
-### 📒 Configure general settings <a name="1201"></a>
+### 📒 Configure general settings <a name="1021"></a>
 
 In the `Configuration > General settings` section you can configure some common settings for your app. Some settings require you to scale up to higher pricing tiers.
 
@@ -359,7 +361,7 @@ A list of the currently available settings:
 - `Debugging`: Enable remote debugging for ASP.NET, ASP.NET Core, or Node.js apps. This option turns off automatically after 48 hours.
 - `Incoming client certificates`: Require client certificates in mutual authentication. TLS mutual authentication is used to restrict access to your app by enabling different types of authentication for it.
 
-### 📒 Configure path mappings <a name="1202"></a>
+### 📒 Configure path mappings <a name="1022"></a>
 
 In the `Configuration > Path mappings` section you can configure handler mappings, and virtual application and directory mappings. The Path mappings page displays different options based on the OS type.
 
@@ -391,7 +393,7 @@ You can add custom storage for your containerized app. Containerized apps includ
 - Mount path: The absolute path in your container to mount the custom storage.
 - Deployment slot setting: When checked, the storage mount settings also apply to deployment slots.
 
-### 📒 Enable diagnostic logging <a name="1203"></a>
+### 📒 Enable diagnostic logging <a name="1023"></a>
 
 There are built-in diagnostics to assist with debugging an App Service app. In this lesson, you learn how to enable diagnostic logging and add instrumentation to your application, and how to access the information logged by Azure.
 
@@ -461,7 +463,7 @@ For logs stored in the App Service file system, the easiest way is to download t
 
 For Linux/container apps, the ZIP file contains console output logs for both the docker host and the docker container. For a scaled-out app, the ZIP file contains one set of logs for each instance. In the App Service file system, these log files are the contents of the /home/LogFiles directory.
 
-### 📒 Configure security certificates <a name="1204"></a>
+### 📒 Configure security certificates <a name="1024"></a>
 
 You've been asked to help secure information being transmitted between your company’s app and the customer. Azure App Service has tools that let you create, upload, or import a private certificate or a public certificate into App Service.
 
@@ -519,7 +521,7 @@ If you already have a working App Service certificate, you can:
 
 App Service Certificates are not supported in Azure National Clouds at this time.
 
-### 📒 Scale apps in Azure App Service <a name="13"></a>
+### 📒 Scale apps in Azure App Service <a name="103"></a>
 
 Azure App Service supports two options for scaling out your web apps automatically:
 
@@ -560,7 +562,7 @@ Here are a few scenarios where you should scale-out automatically:
 - You want your web apps within the same App Service Plan to scale differently and independently of each other.
 - Your web app is connected to a database or legacy system, which may not scale as fast as the web app. Scaling automatically allows you to set the maximum number of instances your App Service Plan can scale to. This setting helps the web app to not overwhelm the backend.
 
-### 📒 Identify autoscale factors <a name="1301"></a>
+### 📒 Identify autoscale factors <a name="1031"></a>
 
 Autoscaling enables you to specify the conditions under which a web app should be scaled out, and back in again. Effective autoscaling ensures sufficient resources are available to handle large volumes of requests at peak times, while managing costs when the demand drops.
 
@@ -625,7 +627,7 @@ A single autoscale condition can contain several autoscale rules (for example, a
 
 When determining whether to scale out, the autoscale action is performed if any of the scale-out rules are met (HTTP queue length exceeds 10 or CPU utilization exceeds 70%). When scaling in, the autoscale action runs only if all of the scale-in rules are met (HTTP queue length drops to zero and CPU utilization falls below 50%). If you need to scale in if only one of the scale-in rules are met, you must define the rules in separate autoscale conditions.
 
-### 📒 Enable autoscale <a name="1302"></a>
+### 📒 Enable autoscale <a name="1032"></a>
 
 To get started with autoscaling navigate to your App Service plan in the Azure portal and select `Scale out (App Service plan)` in the `Settings` group in the left navigation pane.
 
@@ -648,7 +650,7 @@ A metric-based scale condition contains one or more scale rules. You use the Add
 The Azure portal enables you to track when autoscaling has occurred through the Run history chart. This chart shows how the number of instances varies over time, and which autoscale conditions caused each change.
 You can use the Run history chart with the metrics shown on the Overview page to correlate the autoscaling events with resource utilization.
 
-### 📒 Autoscale best practices <a name="1303"></a>
+### 📒 Autoscale best practices <a name="1033"></a>
 
 If you're not following good practices when creating autoscale settings, you can create conditions that lead to undesirable results. In this unit, you'll learn how to avoid creating rules that conflict with each other.
 
@@ -741,7 +743,7 @@ Autoscale posts to the Activity Log if any of the following conditions occur:
 
 You can also use an Activity Log alert to monitor the health of the autoscale engine. In addition to using activity log alerts, you can also configure email or webhook notifications to get notified for successful scale actions via the notifications tab on the autoscale setting.
 
-### 📒 Azure App Service deployment slots <a name="14"></a>
+### 📒 Azure App Service deployment slots <a name="104"></a>
 
 <b>Explore staging environments</b>
 
@@ -920,7 +922,7 @@ By default, new slots are given a routing rule of 0%, a default value is display
 
 ## 2. Functions <a name="2"></a>
 
-### 📒 Explore Azure Function <a name="21"></a>
+### 📒 Explore Azure Function <a name="201"></a>
 
 `Azure Functions` is a serverless solution that allows you to write less code, maintain less infrastructure, and save on costs. Instead of worrying about deploying and maintaining servers, the cloud infrastructure provides all the up-to-date resources needed to keep your applications running.
 
@@ -1036,7 +1038,7 @@ The following table compares the scaling behaviors of the various hosting plans.
 3. For specific limits for the various App Service plan options, see the App Service plan limits.
 4. On Container Apps, you can set the maximum number of replicas, which is honored as long as there's enough cores quota available
 
-### 📒 Develop Azure Function <a name="22"></a>
+### 📒 Develop Azure Function <a name="202"></a>
 
 A function app provides an `execution context` in Azure in which your functions run. As such, it's the unit of deployment and management for your functions. A `function app` is composed of one or more individual functions that are managed, deployed, and scaled together. All of the functions in a function app share the same pricing plan, deployment method, and runtime version. Think of a function app as a way to organize and collectively manage your functions. In Functions 2.x all functions in a function app must be authored in the same language. In previous versions of the Azure Functions runtime, this wasn't required.
 
@@ -1112,7 +1114,7 @@ Identities must have permissions to perform the intended actions. This is typica
 
 Some permissions might be exposed by the target service that are not necessary for all contexts. Where possible, adhere to the principle of least privilege, granting the identity only required privileges.
 
-### 📒 Example <a name="221"></a>
+### 📒 Example <a name="2021"></a>
 
 > 1.
 
@@ -1152,7 +1154,7 @@ The second element in the bindings array is the `Azure Table Storage` output bin
 
 ## 3. Blob storage <a name="3"></a>
 
-### 📒 Explore Azure Blob storage <a name="31"></a>
+### 📒 Explore Azure Blob storage <a name="301"></a>
 
 `Azure Blob storage` is Microsoft's object storage solution for the cloud. Blob storage is optimized for storing massive amounts of unstructured data. Unstructured data is data that doesn't adhere to a particular data model or definition, such as text or binary data.
 
@@ -1245,7 +1247,7 @@ Azure Storage uses service-side encryption (SSE) to automatically encrypt your d
 
 Microsoft recommends using service-side encryption to protect your data for most scenarios. However, the Azure Storage client libraries for Blob Storage and Queue Storage also provide client-side encryption for customers who need to encrypt data on the client.
 
-### 📒 Azure Storage security features <a name="311"></a>
+### 📒 Azure Storage security features <a name="3011"></a>
 
 Azure Storage uses `service-side encryption` (SSE) to automatically encrypt your data when it's persisted to the cloud. Azure Storage encryption protects your data and to help you to meet your organizational security and compliance commitments.
 
@@ -1276,7 +1278,7 @@ The Blob Storage and Queue Storage client libraries uses AES in order to encrypt
 - Version 2 uses Galois/Counter Mode (GCM) mode with AES. The Blob Storage and Queue Storage SDKs support client-side encryption with v2.
 - Version 1 uses Cipher Block Chaining (CBC) mode with AES. The Blob Storage, Queue Storage, and Table Storage SDKs support client-side encryption with v1.
 
-### 📒 Manage the Azure Blob storage lifecycle <a name="32"></a>
+### 📒 Manage the Azure Blob storage lifecycle <a name="302"></a>
 
 Data sets have unique lifecycles. Early in the lifecycle, people access some data often. But the need for access drops drastically as the data ages. Some data stays idle in the cloud and is rarely accessed once stored. Some data expires days or months after creation, while other data sets are actively read and modified throughout their lifetimes.
 
@@ -1479,7 +1481,7 @@ Caution
 
 Changing a blob's tier doesn't affect its last modified time. If there is a lifecycle management policy in effect for the storage account, then rehydrating a blob with Set Blob Tier can result in a scenario where the lifecycle policy moves the blob back to the archive tier after rehydration because the last modified time is beyond the threshold set for the policy.
 
-### 📒 Azure Blob storage client library for .NET <a name="33"></a>
+### 📒 Azure Blob storage client library for .NET <a name="303"></a>
 
 The Azure Storage client libraries for .NET offer a convenient interface for making calls to Azure Storage. The latest version of the Azure Storage client library is version 12.x. Microsoft recommends using version 12.x for new applications.
 
@@ -1499,7 +1501,7 @@ The following packages contain the classes used to work with Blob Storage data r
 
 > <a href="https://learn.microsoft.com/en-us/training/modules/work-azure-blob-storage/5-manage-container-properties-metadata-dotnet">Manage container properties and metadata by using .NET</a>
 
-### 📒 Set and retrieve properties and metadata for blob resources by using REST <a name="34"></a>
+### 📒 Set and retrieve properties and metadata for blob resources by using REST <a name="304"></a>
 
 Containers and blobs support custom metadata, represented as HTTP headers. Metadata headers can be set on a request that creates a new container or blob resource, or on a request that explicitly creates a property on an existing resource.
 
@@ -1565,7 +1567,7 @@ The standard HTTP headers supported on blobs include:
 - Origin
 - Range
 
-### 📒 Examples <a name="341"></a>
+### 📒 Examples <a name="3041"></a>
 
 > 1. <a href="https://learn.microsoft.com/en-us/training/modules/work-azure-blob-storage/4-develop-blob-storage-dotnet">Create Blob storage resources by using the .NET client library</a>
 
@@ -1573,9 +1575,72 @@ The standard HTTP headers supported on blobs include:
 
 ## 4. Cosmos DB <a name="4"></a>
 
-### 📒 Explore Azure Cosmos DB <a name="41"></a>
+### 📒 Explore Azure Cosmos DB <a name="401"></a>
 
-`Azure Cosmos DB` is a globally distributed database system that allows you to read and write data from the local replicas of your database and it transparently replicates the data to all the regions associated with your Cosmos account.
+`Azure Cosmos DB` is a globally distributed database system that allows you to read and write data from the local replicas of your database and it transparently replicates the data to all the regions associated with your Cosmos account. The Azure Cosmos DB account is the fundamental unit of global distribution and high availability. Your Azure Cosmos DB account contains a unique `Domain Name System` (DNS) name and you can manage an account by using the Azure portal or the Azure CLI, or by using different language-specific SDKs. For globally distributing your data and throughput across multiple Azure regions, you can add and remove Azure regions to your account at any time.
+
+An `Azure Cosmos DB container` is the fundamental unit of scalability. You can virtually have an unlimited provisioned throughput (RU/s) and storage on a container. Azure Cosmos DB transparently partitions your container using the logical partition key that you specify in order to elastically scale your provisioned throughput and storage. Currently, you can create a maximum of 50 Azure Cosmos DB accounts under an Azure subscription (can be increased via support request). After you create an account under your Azure subscription, you can manage the data in your account by creating databases, containers, and items.
+
+You can create one or multiple Azure Cosmos DB databases under your account. A database is analogous to a namespace. A database is the unit of management for a set of Azure Cosmos DB containers.
+
+An Azure Cosmos DB container is where data is stored. Unlike most relational databases, which scale up with larger sizes of virtual machines, Azure Cosmos DB scales out. Data is stored on one or more servers called `partitions`. To increase partitions, you increase throughput, or they grow automatically as storage increases. This relationship provides a virtually unlimited amount of throughput and storage for a container. When you create a container, you need to supply a partition key. The `partition key` is a property that you select from your items to help Azure Cosmos DB distribute the data efficiently across partitions. Azure Cosmos DB uses the value of this property to route data to the appropriate partition to be written, updated, or deleted. You can also use the partition key in the `WHERE` clause in queries for efficient data retrieval.
+
+The underlying storage mechanism for data in Azure Cosmos DB is called a `physical partition`. Physical partitions can have a throughput amount up to 10,000 Request Units per second, and they can store up to 50 GB of data. Azure Cosmos DB abstracts this partitioning concept with a logical partition, which can store up to 20 GB of data.
+
+When you create a container, you configure throughput in one of the following modes:
+
+- `Dedicated throughput`: The throughput on a container is exclusively reserved for that container. There are two types of dedicated throughput: standard and autoscale.
+
+- `Shared throughput`: Throughput is specified at the database level and then shared with up to 25 containers within the database. Sharing of throughput excludes containers that are configured with their own dedicated throughput.
+
+Depending on which API you use, individual data entities can be represented in various ways:
+
+| Azure Cosmos DB entity | API for NoSQL | API for Cassandra | API for MongoDB | API for Gremlin | API for Table |
+| ---------------------- | ------------- | ----------------- | --------------- | --------------- | ------------- |
+| Azure Cosmos DB item   | Item          | Row               | Document        | Node or edge    | Item          |
+
+### 📒 Consistency levels <a name="4011"></a>
+
+Azure Cosmos DB approaches data consistency as a spectrum of choices instead of two extremes. Strong consistency and eventual consistency are at the ends of the spectrum, but there are many consistency choices along the spectrum. Developers can use these options to make precise choices and granular tradeoffs with respect to high availability and performance.
+
+Azure Cosmos DB offers five well-defined levels. From strongest to weakest, the levels are:
+
+- Strong
+- Bounded staleness
+- Session
+- Consistent prefix
+- Eventual
+
+Each level provides availability and performance tradeoffs.
+
+The consistency levels are region-agnostic and are guaranteed for all operations, regardless of:
+
+- The region where the reads and writes are served
+- The number of regions associated with your Azure Cosmos DB account
+- Whether your account is configured with a single or multiple write regions.
+
+Read consistency applies to a single read operation scoped within a partition-key range or a logical partition.
+
+<b> Choose the right consistency level</b>
+
+Each of the consistency models can be used for specific real-world scenarios. Each provides precise availability and performance tradeoffs backed by comprehensive SLAs. The following simple considerations help you make the right choice in many common scenarios. You can configure the `default consistency level` on your Azure Cosmos DB account at any time. The default consistency level configured on your account applies to all Azure Cosmos DB databases and containers under that account. All reads and queries issued against a container or a database use the specified consistency level by default. Read consistency applies to a single read operation scoped within a logical partition. The read operation can be issued by a remote client or a stored procedure.
+
+Azure Cosmos DB guarantees that 100 percent of read requests meet the consistency guarantee for the consistency level chosen. The precise definitions of the five consistency levels in Azure Cosmos DB using the TLA+ specification language are provided in the azure-cosmos-tla GitHub repo.
+
+`Strong consistency` offers a linearizability guarantee. Linearizability refers to serving requests concurrently. The reads are guaranteed to return the most recent committed version of an item. A client never sees an uncommitted or partial write. Users are always guaranteed to read the latest committed write.
+
+In `bounded staleness consistency`, the lag of data between any two regions is always less than a specified amount. The amount can be "K" versions (that is, "updates") of an item or by "T" time intervals, whichever is reached first. In other words, when you choose bounded staleness, the maximum "staleness" of the data in any region can be configured in two ways:
+
+- The number of versions (K) of the item
+- The time interval (T) reads might lag behind the writes
+
+Bounded Staleness is beneficial primarily to single-region write accounts with two or more regions. If the data lag in a region (determined per physical partition) exceeds the configured staleness value, writes for that partition are throttled until staleness is back within the configured upper bound. For a single-region account, Bounded Staleness provides the same write consistency guarantees as Session and Eventual Consistency. With Bounded Staleness, data is replicated to a local majority (three replicas in a four replica set) in the single region.
+
+In `session consistency`, within a single client session, reads are guaranteed to honor the read-your-writes, and write-follows-reads guarantees. This guarantee assumes a single “writer” session or sharing the session token for multiple writers. Like all consistency levels weaker than Strong, writes are replicated to a minimum of three replicas (in a four replica set) in the local region, with asynchronous replication to all other regions.
+
+In `consistent prefix`, updates made as single document writes see eventual consistency. Updates made as a batch within a transaction, are returned consistent to the transaction in which they were committed. Write operations within a transaction of multiple documents are always visible together. Assume two write operations are performed on documents Doc 1 and Doc 2, within transactions T1 and T2. When client does a read in any replica, the user sees either “Doc 1 v1 and Doc 2 v1” or “Doc 1 v2 and Doc 2 v2”, but never “Doc 1 v1 and Doc 2 v2” or “Doc 1 v2 and Doc 2 v1” for the same read or query operation.
+
+In `eventual consistency`, there's no ordering guarantee for reads. In the absence of any further writes, the replicas eventually converge.Eventual consistency is the weakest form of consistency because a client might read the values that are older than the ones it read before. Eventual consistency is ideal where the application doesn't require any ordering guarantees. Examples include count of Retweets, Likes, or nonthreaded comments
 
 1 - 4 - 2,30 - v
 2 - 2 - 0,53 - v
