@@ -39,6 +39,14 @@
 - [Explore Azure Cosmos DB](#401)
   - [Consistency levels](#4011)
   - [Supported APIs](#4012)
+  - [Request units](#4013)
+    - [Example](#4014)
+- [Develop solutions that use Cosmos DB](#402)
+  - [Explore Microsoft .NET SDK v3](#4021)
+    - [Example](#4022)
+  - [Create stored procedures](#4023)
+  - [Create triggers and user-defined functions](#4024)
+  - [Change feed in Azure Cosmos DB](#4043)
 
 5. [Implement containerized solutions](#5)
 
@@ -1642,10 +1650,97 @@ In `consistent prefix`, updates made as single document writes see eventual cons
 
 In `eventual consistency`, there's no ordering guarantee for reads. In the absence of any further writes, the replicas eventually converge.Eventual consistency is the weakest form of consistency because a client might read the values that are older than the ones it read before. Eventual consistency is ideal where the application doesn't require any ordering guarantees. Examples include count of Retweets, Likes, or nonthreaded comments
 
+### 📒 Supported APIs <a name="4012"></a>
+
+Azure Cosmos DB offers multiple database APIs, which include NoSQL, MongoDB, PostgreSQL, Cassandra, Gremlin, and Table. By using these APIs, you can model real world data using documents, key-value, graph, and column-family data models. These APIs allow your applications to treat Azure Cosmos DB as if it were various other databases technologies, without the overhead of management, and scaling approaches. Azure Cosmos DB helps you to use the ecosystems, tools, and skills you already have for data modeling and querying with its various APIs.
+
+All the APIs offer automatic scaling of storage and throughput, flexibility, and performance guarantees. There's no one best API, and you may choose any one of the APIs to build your application.
+
+API for NoSQL is native to Azure Cosmos DB.
+
+API for MongoDB, PostgreSQL, Cassandra, Gremlin, and Table implement the wire protocol of open-source database engines. These APIs are best suited if the following conditions are true:
+
+- If you have existing MongoDB, PostgreSQL Cassandra, or Gremlin applications
+- If you don't want to rewrite your entire data access layer
+- If you want to use the open-source developer ecosystem, client-drivers, expertise, and resources for your database
+
+<b>API for NoSQL</b>
+
+The Azure Cosmos DB API for NoSQL stores data in document format. It offers the best end-to-end experience as we have full control over the interface, service, and the SDK client libraries. Any new feature that is rolled out to Azure Cosmos DB is first available on API for NoSQL accounts. NoSQL accounts provide support for querying items using the Structured Query Language (SQL) syntax.
+
+<b>API for MongoDB</b>
+
+The Azure Cosmos DB API for MongoDB stores data in a document structure, via BSON format. It's compatible with MongoDB wire protocol; however, it doesn't use any native MongoDB related code. The API for MongoDB is a great choice if you want to use the broader MongoDB ecosystem and skills, without compromising on using Azure Cosmos DB features.
+
+<b>API for PostgreSQL</b>
+
+Azure Cosmos DB for PostgreSQL is a managed service for running PostgreSQL at any scale, with the Citus open source superpower of distributed tables. It stores data either on a single node, or distributed in a multi-node configuration.
+
+<b>API for Apache Cassandra</b>
+
+The Azure Cosmos DB API for Cassandra stores data in column-oriented schema. Apache Cassandra offers a highly distributed, horizontally scaling approach to storing large volumes of data while offering a flexible approach to a column-oriented schema. API for Cassandra in Azure Cosmos DB aligns with this philosophy to approaching distributed NoSQL databases. This API for Cassandra is wire protocol compatible with native Apache Cassandra.
+
+<b>API for Apache Gremlin</b>
+
+The Azure Cosmos DB API for Gremlin allows users to make graph queries and stores data as edges and vertices.
+
+Use the API for Gremlin for scenarios:
+
+- Involving dynamic data
+- Involving data with complex relations
+- Involving data that is too complex to be modeled with relational databases
+- If you want to use the existing Gremlin ecosystem and skills
+
+<b>API for Table</b>
+
+The Azure Cosmos DB API for Table stores data in key/value format. If you're currently using Azure Table storage, you might see some limitations in latency, scaling, throughput, global distribution, index management, low query performance. API for Table overcomes these limitations and the recommendation is to migrate your app if you want to use the benefits of Azure Cosmos DB. API for Table only supports OLTP scenarios.
+
+### 📒 Request units <a name="4013"></a>
+
+With Azure Cosmos DB, you pay for the throughput you provision and the storage you consume on an hourly basis. Throughput must be provisioned to ensure that sufficient system resources are available for your Azure Cosmos database always. The cost of all database operations is normalized in Azure Cosmos DB and expressed by request units (or RUs, for short). A `request unit` represents the system resources such as CPU, IOPS, and memory that are required to perform the database operations supported by Azure Cosmos DB. The cost to do a point read, which is fetching a single item by its ID and partition key value, for a 1-KB item is 1RU. All other database operations are similarly assigned a cost using RUs. No matter which API you use to interact with your Azure Cosmos container, costs are measured by RUs. Whether the database operation is a write, point read, or query, costs are measured in RUs.
+
+The following image shows the high-level idea of RUs:
+
+![](images/19.png)
+
+The type of Azure Cosmos DB account you're using determines the way consumed RUs get charged. There are three modes in which you can create an account:
+
+- `Provisioned throughput mode`: In this mode, you provision the number of RUs for your application on a per-second basis in increments of 100 RUs per second. To scale the provisioned throughput for your application, you can increase or decrease the number of RUs at any time in increments or decrements of 100 RUs. You can make your changes either programmatically or by using the Azure portal. You can provision throughput at container and database granularity level.
+
+- `Serverless mode`: In this mode, you don't have to provision any throughput when creating resources in your Azure Cosmos DB account. At the end of your billing period, you get billed for the number of request units that have been consumed by your database operations.
+
+- `Autoscale mode`: In this mode, you can automatically and instantly scale the throughput (RU/s) of your database or container based on its usage. This scaling operation doesn't affect the availability, latency, throughput, or performance of the workload. This mode is well suited for mission-critical workloads that have variable or unpredictable traffic patterns, and require SLAs on high performance and scale.
+
+### 📒 Examples <a name="4014"></a>
+
+> 1. <a href="https://learn.microsoft.com/en-us/training/modules/explore-azure-cosmos-db/8-create-cosmos-db-resources-portal">Create Azure Cosmos DB resources by using the Azure portal</a>
+
+### 📒 Develop solutions that use Cosmos DB <a name="402"></a>
+
+### 📒 Explore Microsoft .NET SDK v3 <a name="4021"></a>
+
+> <a href="https://learn.microsoft.com/en-us/training/modules/work-with-cosmos-db/2-cosmos-db-dotnet-overview">Explore Microsoft .NET SDK v3</a>
+
+### 📒 Example <a name="4022"></a>
+
+> <a href="https://learn.microsoft.com/en-us/training/modules/work-with-cosmos-db/3-exercise-work-cosmos-db-dotnet">Create resources by using the Microsoft .NET SDK v3</a>
+
+### 📒 Create stored procedures <a name="4023"></a>
+
+> <a href="https://learn.microsoft.com/en-us/training/modules/work-with-cosmos-db/4-cosmos-db-stored-procedures">Create stored procedures</a>
+
+### 📒 Create triggers and user-defined functions <a name="4024"></a>
+
+> <a href="https://learn.microsoft.com/en-us/training/modules/work-with-cosmos-db/5-cosmos-db-triggers-user-defined-functions">Create triggers and user-defined functions</a>
+
+### 📒 Change feed in Azure Cosmos DB <a name="4024"></a>
+
+> <a href="https://learn.microsoft.com/en-us/training/modules/work-with-cosmos-db/6-cosmos-db-change-feed">Change feed in Azure Cosmos DB</a>
+
 1 - 4 - 2,30 - v
 2 - 2 - 0,53 - v
 3 - 3 - 1,19 - v
-4 - 2 - 1,19 - 22
+4 - 2 - 1,19 - v
 5 - 3 - 1,42 - 23
 6 - 4 - 1,25 - 24
 7 - 3 - 1,05 - 25
