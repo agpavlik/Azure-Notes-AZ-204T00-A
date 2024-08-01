@@ -50,6 +50,16 @@
 
 5. [Implement containerized solutions](#5)
 
+- [Discover the Azure Container Registry](#501)
+- [Build and manage containers with tasks](#502)
+- [Elements of a Dockerfile](#503)
+  - [Example](#5031)
+- [Explore Azure Container Instances](#504)
+  - [Example](#5041)
+- [Implement Azure Container Apps](#505)
+  - [Example](#5051)
+- [Explore containers in Azure Container Apps](#506)
+
 6. [Implement user authentication and authorization](#6)
 
 7. [Implement secure Azure solutions](#7)
@@ -1721,7 +1731,7 @@ The type of Azure Cosmos DB account you're using determines the way consumed RUs
 
 > <a href="https://learn.microsoft.com/en-us/training/modules/work-with-cosmos-db/2-cosmos-db-dotnet-overview">Explore Microsoft .NET SDK v3</a>
 
-### 📒 Example <a name="4022"></a>
+### 📒 Examples <a name="4022"></a>
 
 > <a href="https://learn.microsoft.com/en-us/training/modules/work-with-cosmos-db/3-exercise-work-cosmos-db-dotnet">Create resources by using the Microsoft .NET SDK v3</a>
 
@@ -1736,6 +1746,515 @@ The type of Azure Cosmos DB account you're using determines the way consumed RUs
 ### 📒 Change feed in Azure Cosmos DB <a name="4024"></a>
 
 > <a href="https://learn.microsoft.com/en-us/training/modules/work-with-cosmos-db/6-cosmos-db-change-feed">Change feed in Azure Cosmos DB</a>
+
+## 5. Implement containerized solutions <a name="5"></a>
+
+### 📒 Discover the Azure Container Registry <a name="501"></a>
+
+`Azure Container Registry` (ACR) is a managed registry service based on the open-source `Docker Registry 2.0`. Create and maintain Azure container registries to store and manage your container images and related artifacts. Use the ACR service with your existing container development and deployment pipelines, or use Azure Container Registry Tasks to build container images in Azure. Build on demand, or fully automate builds with triggers such as source code commits and base image updates.
+
+Pull images from an Azure container registry to various deployment targets:
+
+- `Scalable orchestration systems` that manage containerized applications across clusters of hosts, including Kubernetes, DC/OS, and Docker Swarm.
+- `Azure services` that support building and running applications at scale, including Azure Kubernetes Service (AKS), App Service, Batch, and Service Fabric.
+
+Developers can also push to a container registry as part of a container development workflow. For example, target a container registry from a continuous integration and delivery tool such as Azure Pipelines or Jenkins. Configure ACR Tasks to automatically rebuild application images when their base images are updated, or automate image builds when your team commits code to a Git repository. Create multi-step tasks to automate building, testing, and patching multiple container images in parallel in the cloud.
+
+Azure Container Registry is available in multiple service tiers. These tiers provide predictable pricing and several options for aligning to the capacity and usage patterns of your private Docker registry in Azure.
+
+- `Basic`. A cost-optimized entry point for developers learning about Azure Container Registry. Basic registries have the same programmatic capabilities as Standard and Premium (such as Microsoft Entra authentication integration, image deletion, and webhooks). However, the included storage and image throughput are most appropriate for lower usage scenarios.
+- `Standard`. Standard registries offer the same capabilities as Basic, with increased included storage and image throughput. Standard registries should satisfy the needs of most production scenarios.
+- `Premium`. Premium registries provide the highest amount of included storage and concurrent operations, enabling high-volume scenarios. In addition to higher image throughput, Premium adds features such as: geo-replication for managing a single registry across multiple regions, content trust for image tag signing, and private link with private endpoints to restrict access to the registry.
+
+When images are grouped in a repository, each image is a read-only snapshot of a Docker-compatible container. Azure container registries can include both Windows and Linux images. In addition to Docker container images, Azure Container Registry stores related content formats such as Helm charts and images built to the <a href="https://github.com/opencontainers/image-spec/blob/main/spec.md">Open Container Initiative (OCI) Image Format Specification</a>. Use <a href="https://learn.microsoft.com/en-us/azure/container-registry/container-registry-tasks-overview">Azure Container Registry Tasks</a> (ACR Tasks) to streamline building, testing, pushing, and deploying images in Azure. Configure build tasks to automate your container OS and framework patching pipeline, and build images automatically when your team commits code to source control.
+
+All Azure Container Registry tiers benefit from advanced Azure storage features like encryption-at-rest for image data security and geo-redundancy for image data protection.
+
+- `Encryption-at-rest`: All container images and other artifacts in your registry are encrypted at rest. Azure automatically encrypts an image before storing it, and decrypts it on-the-fly when you or your applications and services pull the image. Optionally apply an extra encryption layer with a customer-managed key.
+
+- `Regional storage`: Azure Container Registry stores data in the region where the registry is created, to help customers meet data residency and compliance requirements. In all regions except Brazil South and Southeast Asia, Azure might also store registry data in a paired region in the same geography. In the Brazil South and Southeast Asia regions, registry data is always confined to the region, to accommodate data residency requirements for those regions. If a regional outage occurs, the registry data might become unavailable and isn't automatically recovered. Customers who wish to have their registry data stored in multiple regions for better performance across different geographies, or who wish to have resiliency in a regional outage event, should enable geo-replication.
+
+- `Geo-replication`: For scenarios requiring high-availability assurance, consider using the geo-replication feature of Premium registries. Geo-replication helps guard against losing access to your registry in a regional failure event. Geo-replication provides other benefits, too, like network-close image storage for faster pushes and pulls in distributed development or deployment scenarios.
+
+- `Zone redundancy`: A feature of the Premium service tier, zone redundancy uses Azure availability zones to replicate your registry to a minimum of three separate zones in each enabled region.
+
+- `Scalable storage`: Azure Container Registry allows you to create as many repositories, images, layers, or tags as you need, up to the registry storage limit. High numbers of repositories and tags can impact the performance of your registry. Periodically delete unused repositories, tags, and images as part of your registry maintenance routine. Deleted registry resources like repositories, images, and tags can't be recovered after deletion.
+
+### 📒 Build and manage containers with tasks <a name="502"></a>
+
+Azure Container Registry (ACR) tasks are a suite of features that:
+
+- Provide cloud-based container image building for platforms like Linux, Windows, and Advanced RISC Machines (Arm).
+- Extend the early parts of an application development cycle to the cloud with on-demand container image builds.
+- Enable automated builds triggered by source code updates, updates to a container's base image, or timers.
+
+<b>Task scenarios</b>
+
+ACR Tasks supports several scenarios to build and maintain container images and other artifacts.
+
+- `Quick task` - Build and push a single container image to a container registry on-demand, in Azure, without needing a local Docker Engine installation. Think docker build, docker push in the cloud.
+
+- `Automatically triggered tasks` - Enable one or more triggers to build an image:
+
+  - Trigger on source code update
+  - Trigger on base image update
+  - Trigger on a schedule
+
+- `Multi-step task` - Extend the single image build-and-push capability of ACR Tasks with multi-step, multi-container-based workflows.
+
+Each ACR Task has an associated source code context - the location of a set of source files used to build a container image or other artifact. Example contexts include a Git repository or a local filesystem.
+
+`Quick task`
+The inner-loop development cycle is the iterative process of writing code, building, and testing your application before committing to source control. It's really the beginning of container lifecycle management.
+
+Before you commit your first line of code, ACR Tasks's quick task feature can provide an integrated development experience by offloading your container image builds to Azure. With quick tasks, you can verify your automated build definitions and catch potential problems before committing your code.
+
+Using the familiar docker build format, the az acr build command in the Azure CLI takes a context (the set of files to build), sends it to ACR Tasks and, by default, pushes the built image to its registry upon completion.
+
+`Trigger task on source code update`
+Trigger a container image build or multi-step task when code is committed, or a pull request is made or updated, to a Git repository in GitHub or Azure DevOps Services. For example, configure a build task with the Azure CLI command az acr task create by specifying a Git repository and optionally a branch and Dockerfile. When your team updates code in the repository, an ACR Tasks-created webhook triggers a build of the container image defined in the repo.
+
+`Trigger on base image update`
+You can set up an ACR task to track a dependency on a base image when it builds an application image. When the updated base image is pushed to your registry, or a base image is updated in a public repo such as in Docker Hub, ACR Tasks can automatically build any application images based on it.
+
+`Schedule a task`
+Optionally schedule a task by setting up one or more timer triggers when you create or update the task. Scheduling a task is useful for running container workloads on a defined schedule, or running maintenance operations or tests on images pushed regularly to your registry.
+
+`Multi-step tasks`
+Multi-step tasks, defined in a YAML file specify individual build and push operations for container images or other artifacts. They can also define the execution of one or more containers, with each step using the container as its execution environment. For example, you can create a multi-step task that automates the following:
+
+1. Build a web application image
+2. Run the web application container
+3. Build a web application test image
+4. Run the web application test container, which performs tests against the running application container
+5. If the tests pass, build a Helm chart archive package
+6. Perform a helm upgrade using the new Helm chart archive package
+
+`Image platforms`
+By default, ACR Tasks builds images for the Linux OS and the amd64 architecture. Specify the --platform tag to build Windows images or Linux images for other architectures. Specify the OS and optionally a supported architecture in OS/architecture format (for example, --platform Linux/arm). For ARM architectures, optionally specify a variant in OS/architecture/variant format (for example, --platform Linux/arm64/v8)
+
+### 📒 Elements of a Dockerfile <a name="503"></a>
+
+A `Dockerfile` is a script that contains a series of instructions that are used to build a Docker image. Dockerfiles typically include the following information:
+
+- The base or parent image we use to create the new image
+- Commands to update the base OS and install other software
+- Build artifacts to include, such as a developed application
+- Services to expose, such a storage and network configuration
+- Command to run when the container is launched
+
+<b>Create a Dockerfile</b>
+
+The first step in creating a Dockerfile is choosing a base image that serves as the foundation for your application. For example, if you're building a .NET application, you might choose a Microsoft .NET image as your base.
+
+```
+# Use the .NET 6 runtime as a base image
+FROM mcr.microsoft.com/dotnet/runtime:6.0
+
+# Set the working directory to /app
+WORKDIR /app
+
+# Copy the contents of the published app to the container's /app directory
+COPY bin/Release/net6.0/publish/ .
+
+# Expose port 80 to the outside world
+EXPOSE 80
+
+# Set the command to run when the container starts
+CMD ["dotnet", "MyApp.dll"]
+```
+
+Let's go through each line to see what it does:
+
+- FROM mcr.microsoft.com/dotnet/runtime:6.0: This command sets the base image to the .NET 6 runtime, which is needed to run .NET 6 apps.
+- WORKDIR /app: Sets the working directory to /app, which is where app files are copied.
+- COPY bin/Release/net6.0/publish/ .: Copies the contents of the published app to the container's /app directory. We assume that the .NET 6 app is built and published to the bin/Release/net6.0/publish directory.
+- EXPOSE 80: Exposes port 80, which is the default HTTP port, to the outside world. Change this line accordingly if your app listens on a different port.
+- CMD ["dotnet", "MyApp.dll"]: The command to run when the container starts. In this case, we're running the dotnet command with the name of our app's DLL file (MyApp.dll). Change this line to match your apps name and entry point.
+
+We're not going to cover the Dockerfile file specification. Visit the Dockerfile reference for more information. Each of these steps creates a cached container image as we build the final container image. These temporary images are layered on top of the previous and presented as single image once all steps complete.
+
+Resources
+Docker run reference (CLI)
+https://docs.docker.com/engine/reference/run/
+Docker build reference
+https://docs.docker.com/engine/reference/commandline/build/
+
+### 📒 Example <a name="5031"></a>
+
+> 1. <a href="https://learn.microsoft.com/en-us/training/modules/publish-container-image-to-azure-container-registry/6-build-run-image-azure-container-registry">Build and run a container image by using Azure Container Registry Tasks</a>
+
+### 📒 Explore Azure Container Instances <a name="504"></a>
+
+`Azure Container Instances` (ACI) is a great solution for any scenario that can operate in isolated containers, including simple applications, task automation, and build jobs. Here are some of the benefits:
+
+- `Fast startup`: ACI can start containers in Azure in seconds, without the need to provision and manage a virtual machine (VM)
+- `Container access`: ACI enables exposing your container groups directly to the internet with an IP address and a fully qualified domain name (FQDN)
+- `Hypervisor-level security`: Isolate your application as completely as it would be in a VM
+- `Customer data`: The ACI service stores the minimum customer data required to ensure your container groups are running as expected
+- `Custom sizes`: ACI provides optimum utilization by allowing exact specifications of CPU cores and memory
+- `Persistent storage`: Mount Azure Files shares directly to a container to retrieve and persist state
+- `Linux and Windows`: Schedule both Windows and Linux containers using the same API.
+
+For scenarios where you need full container orchestration, including service discovery across multiple containers, automatic scaling, and coordinated application upgrades, we recommend `Azure Kubernetes Service` (AKS).
+
+The top-level resource in Azure Container Instances is the `container group`. A container group is a collection of containers that get scheduled on the same host machine. The containers in a container group share a lifecycle, resources, local network, and storage volumes. It's similar in concept to a `pod` in Kubernetes.
+
+There are two common ways to deploy a multi-container group: use a Resource Manager template or a YAML file. A Resource Manager template is recommended when you need to deploy more Azure service resources (for example, an Azure Files share) when you deploy the container instances. Due to the YAML format's more concise nature, a YAML file is recommended when your deployment includes only container instances.
+
+Azure Container Instances allocates resources such as CPUs, memory, and optionally GPUs (preview) to a container group by adding the resource requests of the instances in the group. Using CPU resources as an example, if you create a container group with two instances, each requesting one CPU, then the container group is allocated two CPUs.
+
+Container groups share an IP address and a port namespace on that IP address. To enable external clients to reach a container within the group, you must expose the port on the IP address and from the container. Because containers within the group share a port namespace, port mapping isn't supported. Containers within a group can reach each other via localhost on the ports that they exposed, even if those ports aren't exposed externally on the group's IP address.
+
+You can specify external volumes to mount within a container group. You can map those volumes into specific paths within the individual containers in a group. Supported volumes include:
+
+- Azure file share
+- Secret
+- Empty directory
+- Cloned git repo
+
+Multi-container groups are useful in cases where you want to divide a single functional task into a few container images. These images might be delivered by different teams and have separate resource requirements.
+
+Example usage could include:
+
+- A container serving a web application and a container pulling the latest content from source control.
+- An application container and a logging container. The logging container collects the logs and metrics output by the main application and writes them to long-term storage.
+- An application container and a monitoring container. The monitoring container periodically makes a request to the application to ensure that it's running and responding correctly, and raises an alert if it's not.
+- A front-end container and a back-end container. The front end might serve a web application, with the back end running a service to retrieve data.
+
+<b> Run containerized tasks with restart policies </b>
+
+The ease and speed of deploying containers in Azure Container Instances provides a compelling platform for executing run-once tasks like build, test, and image rendering in a container instance. With a configurable restart policy, you can specify that your containers are stopped when their processes are completed. Because container instances are billed by the second, you're charged only for the compute resources used while the container executing your task is running.
+
+When you create a container group in Azure Container Instances, you can specify one of three restart policy settings.
+
+- `Always`. Containers in the container group are always restarted. This is the default setting applied when no restart policy is specified at container creation.
+- `Never`. Containers in the container group are never restarted. The containers run at most once.
+- `OnFailure`. Containers in the container group are restarted only when the process executed in the container fails (when it terminates with a nonzero exit code). The containers are run at least once.
+
+Specify the `--restart-policy` parameter when you call az container create.
+
+```
+az container create \
+    --resource-group myResourceGroup \
+    --name mycontainer \
+    --image mycontainerimage \
+    --restart-policy OnFailure
+```
+
+Azure Container Instances starts the container, and then stops it when its application, or script, exits. When Azure Container Instances stops a container whose restart policy is Never or OnFailure, the container's status is set to `Terminated`.
+
+<b>Set environment variables in container instances</b>
+
+Setting environment variables in your container instances allows you to provide dynamic configuration of the application or script run by the container. These environment variables are similar to the `--env` command-line argument to `docker run`.
+
+If you need to pass secrets as environment variables, Azure Container Instances supports secure values for both Windows and Linux containers.
+
+In the following example, two variables are passed to the container when it's created. The example is assuming you're running the CLI in a Bash shell or Cloud Shell, if you use the Windows Command Prompt, specify the variables with double-quotes, such as `--environment-variables "NumWords"="5" "MinLength"="8"`.
+
+```
+az container create \
+    --resource-group myResourceGroup \
+    --name mycontainer2 \
+    --image mcr.microsoft.com/azuredocs/aci-wordcount:latest
+    --restart-policy OnFailure \
+    --environment-variables 'NumWords'='5' 'MinLength'='8'\
+```
+
+Objects with secure values are intended to hold sensitive information like passwords or keys for your application. Using secure values for environment variables is both safer and more flexible than including it in your container's image.
+
+Environment variables with secure values aren't visible in your container's properties. Their values can be accessed only from within the container. For example, container properties viewed in the Azure portal or Azure CLI display only a secure variable's name, not its value.
+
+Set a secure environment variable by specifying the secureValue property instead of the regular value for the variable's type. The two variables defined in the following YAML demonstrate the two variable types.
+
+```
+apiVersion: 2018-10-01
+location: eastus
+name: securetest
+properties:
+  containers:
+  - name: mycontainer
+    properties:
+      environmentVariables:
+        - name: 'NOTSECRET'
+          value: 'my-exposed-value'
+        - name: 'SECRET'
+          secureValue: 'my-secret-value'
+      image: nginx
+      ports: []
+      resources:
+        requests:
+          cpu: 1.0
+          memoryInGB: 1.5
+  osType: Linux
+  restartPolicy: Always
+tags: null
+type: Microsoft.ContainerInstance/containerGroups
+```
+
+You would run the following command to deploy the container group with YAML:
+
+```
+az container create --resource-group myResourceGroup \
+    --file secure-env.yaml \
+```
+
+<b>Mount an Azure file share in Azure Container Instances</b>
+
+By default, Azure Container Instances are stateless. If the container crashes or stops, all of its state is lost. To persist state beyond the lifetime of the container, you must mount a volume from an external store. As shown in this unit, Azure Container Instances can mount an Azure file share created with Azure Files. Azure Files offers fully managed file shares in the cloud that are accessible via the industry standard Server Message Block (SMB) protocol. Using an Azure file share with Azure Container Instances provides file-sharing features similar to using an Azure file share with Azure virtual machines.
+
+Limitations:
+
+- You can only mount Azure Files shares to Linux containers.
+- Azure file share volume mount requires the Linux container run as root.
+- Azure File share volume mounts are limited to CIFS support.
+
+<b>Deploy container and mount volume</b>
+
+To mount an Azure file share as a volume in a container by using the Azure CLI, specify the share and volume mount point when you create the container with `az container create`. Following is an example of the command:
+
+```
+az container create
+--resource-group $ACI_PERS_RESOURCE_GROUP
+--name hellofiles
+--image mcr.microsoft.com/azuredocs/aci-hellofiles
+--dns-name-label aci-demo
+--ports 80
+--azure-file-volume-account-name $ACI_PERS_STORAGE_ACCOUNT_NAME --azure-file-volume-account-key $STORAGE_KEY --azure-file-volume-share-name $ACI_PERS_SHARE_NAME --azure-file-volume-mount-path /aci/logs/
+```
+
+The `--dns-name-label` value must be unique within the Azure region where you create the container instance. Update the value in the preceding command if you receive a DNS name label error message when you execute the command.
+
+<b> Deploy container and mount volume - YAML</b>
+
+You can also deploy a container group and mount a volume in a container with the Azure CLI and a YAML template. Deploying by YAML template is the preferred method when deploying container groups consisting of multiple containers.
+
+The following YAML template defines a container group with one container created with the aci-hellofiles image. The container mounts the Azure file share acishare created previously as a volume. Following is an example YAML file.
+
+```
+apiVersion: '2019-12-01'
+location: eastus
+name: file-share-demo
+properties:
+  containers:
+  - name: hellofiles
+    properties:
+      environmentVariables: []
+      image: mcr.microsoft.com/azuredocs/aci-hellofiles
+      ports:
+      - port: 80
+      resources:
+        requests:
+          cpu: 1.0
+          memoryInGB: 1.5
+      volumeMounts:
+      - mountPath: /aci/logs/
+        name: filesharevolume
+  osType: Linux
+  restartPolicy: Always
+  ipAddress:
+    type: Public
+    ports:
+      - port: 80
+    dnsNameLabel: aci-demo
+  volumes:
+  - name: filesharevolume
+    azureFile:
+      sharename: acishare
+      storageAccountName: <Storage account name>
+      storageAccountKey: <Storage account key>
+tags: {}
+type: Microsoft.ContainerInstance/containerGroups
+```
+
+<b>Mount multiple volumes</b>
+
+To mount multiple volumes in a container instance, you must deploy using an Azure Resource Manager template or a YAML file. To use a template or YAML file, provide the share details and define the volumes by populating the volumes array in the properties section of the template.
+
+For example, if you created two Azure Files shares named share1 and share2 in storage account myStorageAccount, the volumes array in a Resource Manager template would appear similar to the following:
+
+```
+JSON
+
+"volumes": [{
+  "name": "myvolume1",
+  "azureFile": {
+    "shareName": "share1",
+    "storageAccountName": "myStorageAccount",
+    "storageAccountKey": "<storage-account-key>"
+  }
+},
+{
+  "name": "myvolume2",
+  "azureFile": {
+    "shareName": "share2",
+    "storageAccountName": "myStorageAccount",
+    "storageAccountKey": "<storage-account-key>"
+  }
+}]
+
+```
+
+Next, for each container in the container group in which you'd like to mount the volumes, populate the volumeMounts array in the properties section of the container definition. For example, this mounts the two volumes, myvolume1 and myvolume2, previously defined:
+
+```
+JSON
+
+"volumeMounts": [{
+  "name": "myvolume1",
+  "mountPath": "/mnt/share1/"
+},
+{
+  "name": "myvolume2",
+  "mountPath": "/mnt/share2/"
+}]
+
+```
+
+### 📒 Example <a name="5041"></a>
+
+> 1. <a href="https://learn.microsoft.com/en-us/training/modules/create-run-container-images-azure-container-instances/3-run-azure-container-instances-cloud-shell">Deploy a container instance by using the Azure CLI</a>
+
+### 📒 Implement Azure Container Apps <a name="505"></a>
+
+`Azure Container Apps` enables you to run microservices and containerized applications on a serverless platform that runs on top of Azure Kubernetes Service. Common uses of Azure Container Apps include:
+
+- Deploying API endpoints
+- Hosting background processing applications
+- Handling event-driven processing
+- Running microservices
+
+Applications built on Azure Container Apps can dynamically scale based on: HTTP traffic, event-driven processing, CPU or memory load, and any KEDA-supported scaler.
+
+With Azure Container Apps, you can:
+
+- Run multiple container revisions and manage the container app's application lifecycle.
+- Autoscale your apps based on any KEDA-supported scale trigger. Most applications can scale to zero. (Applications that scale on CPU or memory load can't scale to zero.)
+- Enable HTTPS ingress without having to manage other Azure infrastructure.
+- Split traffic across multiple versions of an application for Blue/Green deployments and A/B testing scenarios.
+- Use internal ingress and service discovery for secure internal-only endpoints with built-in DNS-based service discovery.
+- Build microservices with Dapr and access its rich set of APIs.
+- Run containers from any registry, public or private, including Docker Hub and Azure Container Registry (ACR).
+- Use the Azure CLI extension, Azure portal or ARM templates to manage your applications.
+- Provide an existing virtual network when creating an environment for your container apps.
+- Securely manage secrets directly in your application.
+- Monitor logs using Azure Log Analytics.
+
+Individual container apps are deployed to a single Container Apps environment, which acts as a secure boundary around groups of container apps. Container Apps in the same environment are deployed in the same virtual network and write logs to the same Log Analytics workspace. You might provide an existing virtual network when you create an environment.
+
+Reasons to deploy container apps to the same environment include situations when you need to:
+
+- Manage related services
+- Deploy different applications to the same virtual network
+- nstrument Dapr applications that communicate via the Dapr service invocation API
+- Have applications to share the same Dapr configuration
+- Have applications share the same log analytics workspace
+
+Reasons to deploy container apps to different environments include situations when you want to ensure:
+
+- Two applications never share the same compute resources
+- Two Dapr applications can't communicate via the Dapr service invocation API
+
+`Microservice architectures` allow you to independently develop, upgrade, version, and scale core areas of functionality in an overall system. Azure Container Apps provides the foundation for deploying microservices featuring:
+
+- Independent scaling, versioning, and upgrades
+- Service discovery
+- Native Dapr integration
+
+When you implement a system composed of microservices, function calls are spread across the network. To support the distributed nature of microservices, you need to account for failures, retries, and timeouts. While Container Apps features the building blocks for running microservices, use of `Dapr` provides an even richer microservices programming model. `Dapr` includes features like observability, pub/sub, and service-to-service invocation with mutual TLS, retries, and more.
+
+### 📒 Example <a name="5051"></a>
+
+> 1. <a href="https://learn.microsoft.com/en-us/training/modules/implement-azure-container-apps/3-exercise-deploy-app">Deploy a container app</a>
+
+### 📒 Explore containers in Azure Container Apps <a name="506"></a>
+
+Azure Container Apps manages the details of Kubernetes and container orchestration for you. Containers in Azure Container Apps can use any runtime, programming language, or development stack of your choice.
+
+![](images/20.png)
+
+Azure Container Apps supports any Linux-based x86-64 (linux/amd64) container image. There's no required base container image, and if a container crashes it automatically restarts.
+
+<b>Configuration</b>
+
+The following code is an example of the containers array in the properties.template section of a container app resource template. The excerpt shows some of the available configuration options when setting up a container when using Azure Resource Manager (ARM) templates. Changes to the template ARM configuration section trigger a new container app revision.
+
+```
+JSON
+
+"containers": [
+  {
+       "name": "main",
+       "image": "[parameters('container_image')]",
+    "env": [
+      {
+        "name": "HTTP_PORT",
+        "value": "80"
+      },
+      {
+        "name": "SECRET_VAL",
+        "secretRef": "mysecret"
+      }
+    ],
+    "resources": {
+      "cpu": 0.5,
+      "memory": "1Gi"
+    },
+    "volumeMounts": [
+      {
+        "mountPath": "/myfiles",
+        "volumeName": "azure-files-volume"
+      }
+    ]
+    "probes":[
+        {
+            "type":"liveness",
+            "httpGet":{
+            "path":"/health",
+            "port":8080,
+            "httpHeaders":[
+                {
+                    "name":"Custom-Header",
+                    "value":"liveness probe"
+                }]
+            },
+            "initialDelaySeconds":7,
+            "periodSeconds":3
+// file is truncated for brevity
+
+```
+
+You can define multiple containers in a single container app to implement the sidecar pattern. The containers in a container app share hard disk and network resources and experience the same application lifecycle.
+
+Examples of sidecar containers include:
+
+- An agent that reads logs from the primary app container on a shared volume and forwards them to a logging service.
+- A background process that refreshes a cache used by the primary app container in a shared volume.
+
+Running multiple containers in a single container app is an advanced use case. In most situations where you want to run multiple containers, such as when implementing a microservice architecture, deploy each service as a separate container app. To run multiple containers in a container app, add more than one container in the containers array of the container app template.
+
+You can deploy images hosted on private registries by providing credentials in the Container Apps configuration. To use a container registry, you define the required fields in registries array in the properties.configuration section of the container app resource template. The passwordSecretRef field identifies the name of the secret in the secrets array name where you defined the password.
+
+```
+JSON
+
+{
+  ...
+  "registries": [{
+    "server": "docker.io",
+    "username": "my-registry-user-name",
+    "passwordSecretRef": "my-password-secret-name"
+  }]
+}
+
+```
+
+With the registry information added, the saved credentials can be used to pull a container image from the private registry when your app is deployed.
+
+Azure Container Apps has the following limitations:
+
+- Privileged containers: Azure Container Apps can't run privileged containers. If your program attempts to run a process that requires root access, the application inside the container experiences a runtime error.
+- Operating system: Linux-based (linux/amd64) container images are required.
 
 1 - 4 - 2,30 - v
 2 - 2 - 0,53 - v
