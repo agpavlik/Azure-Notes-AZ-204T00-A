@@ -80,6 +80,8 @@
 
 8. [Implement API Management](#8)
 
+- [Example](#801)
+
 ## 1. Azure App Service <a name="1"></a>
 
 ### 📒 Explore Azure App Service <a name="101"></a>
@@ -3426,16 +3428,8 @@ If you have a policy at the global level and a policy configured for an API, the
 
 In the previous example policy definition, The cross-domain statement would execute first. The find-and-replace policy would execute after any policies at a broader scope.
 
-The policy defined in following example demonstrates how to filter data elements from the response payload based on the product associated with the request. The snippet assumes that response content is formatted as JSON and contains root-level properties named "minutely", "hourly", "daily", "flags".
+The policy defined in following example demonstrates how to filter data elements from the response payload based on the product associated with the request. The snippet assumes that response content is formatted as JSON and contains root-level properties named### 📒 Example <a name="7011"></a>
 
-```
-XML
-<policies>
-  <inbound>
-    <base />
-  </inbound>
-  <backend>
-    <base />
   </backend>
   <outbound>
     <base />
@@ -3476,18 +3470,20 @@ This unit provides a reference for the following API Management policies:
 The choose policy applies enclosed policy statements based on the outcome of evaluation of boolean expressions, similar to an if-then-else or a switch construct in a programming language.
 
 ```
+
 XML
 <choose>
-    <when condition="Boolean expression | Boolean constant">
-        <!— one or more policy statements to be applied if the above condition is true  -->
-    </when>
-    <when condition="Boolean expression | Boolean constant">
-        <!— one or more policy statements to be applied if the above condition is true  -->
-    </when>
-    <otherwise>
-        <!— one or more policy statements to be applied if none of the above conditions are true  -->
+<when condition="Boolean expression | Boolean constant">
+<!— one or more policy statements to be applied if the above condition is true -->
+</when>
+<when condition="Boolean expression | Boolean constant">
+<!— one or more policy statements to be applied if the above condition is true -->
+</when>
+<otherwise>
+<!— one or more policy statements to be applied if none of the above conditions are true -->
 </otherwise>
 </choose>
+
 ```
 
 The control flow policy must contain at least one <when/> element. The <otherwise/> element is optional. Conditions in <when/> elements are evaluated in order of their appearance within the policy. Policy statement(s) enclosed within the first <when/> element with condition attribute equals true will be applied. Policies enclosed within the <otherwise/> element, if present, will be applied if all of the <when/> element condition attributes are false.
@@ -3496,6 +3492,7 @@ The control flow policy must contain at least one <when/> element. The <otherwis
 The forward-request policy forwards the incoming request to the backend service specified in the request context. The backend service URL is specified in the API settings and can be changed using the set backend service policy. Removing this policy results in the request not being forwarded to the backend service and the policies in the outbound section are evaluated immediately upon the successful completion of the policies in the inbound section.
 
 ```
+
 XML
 <forward-request timeout="time in seconds" follow-redirects="true | false"/>
 
@@ -3505,9 +3502,10 @@ XML
 The limit-concurrency policy prevents enclosed policies from executing by more than the specified number of requests at any time. Upon exceeding that number, new requests will fail immediately with a 429 Too Many Requests status code.
 
 ```
+
 XML
 <limit-concurrency key="expression" max-count="number">
-        <!— nested policy statements -->
+<!— nested policy statements -->
 </limit-concurrency>
 
 ```
@@ -3516,9 +3514,10 @@ XML
 The log-to-eventhub policy sends messages in the specified format to an Event Hub defined by a Logger entity. As its name implies, the policy is used for saving selected request or response context information for online or offline analysis.
 
 ```
+
 XML
 <log-to-eventhub logger-id="id of the logger entity" partition-id="index of the partition where messages are sent" partition-key="value used for partition assignment">
-  Expression returning a string to be logged
+Expression returning a string to be logged
 </log-to-eventhub>
 
 ```
@@ -3527,6 +3526,7 @@ XML
 The mock-response, as the name implies, is used to mock APIs and operations. It aborts normal pipeline execution and returns a mocked response to the caller. The policy always tries to return responses of highest fidelity. It prefers response content examples, whenever available. It generates sample responses from schemas, when schemas are provided and examples are not. If neither examples or schemas are found, responses with no content are returned.
 
 ```
+
 <mock-response status-code="code" content-type="media type"/>
 
 ```
@@ -3535,6 +3535,7 @@ The mock-response, as the name implies, is used to mock APIs and operations. It 
 The retry policy executes its child policies once and then retries their execution until the retry condition becomes false or retry count is exhausted.
 
 ```
+
 XML
 <retry
     condition="boolean expression or literal"
@@ -3543,19 +3544,22 @@ XML
     max-interval="maximum retry interval in seconds"
     delta="retry interval delta in seconds"
     first-fast-retry="boolean expression or literal">
-        <!-- One or more child policies. No restrictions -->
+
+<!-- One or more child policies. No restrictions -->
 </retry>
+
 ```
 
 `Return response`
 The return-response policy aborts pipeline execution and returns either a default or custom response to the caller. Default response is 200 OK with no body. Custom response can be specified via a context variable or policy statements. When both are provided, the response contained within the context variable is modified by the policy statements before being returned to the caller.
 
 ```
+
 XML
 <return-response response-variable-name="existing context variable">
-  <set-header/>
-  <set-body/>
-  <set-status/>
+<set-header/>
+<set-body/>
+<set-status/>
 </return-response>
 
 ```
@@ -3579,15 +3583,19 @@ Applications must include a valid key in all HTTP requests when they make calls 
 Here's how you can pass a key in the request header using curl:
 
 ```
+
 Bash
 curl --header "Ocp-Apim-Subscription-Key: <key string>" https://<apim gateway>.azure-api.net/api/path
+
 ```
 
 Here's an example curl command that passes a key in the URL as a query string:
 
 ```
+
 Bash
 curl https://<apim gateway>.azure-api.net/api/path?subscription-key=<key string>
+
 ```
 
 If the key is not passed in the header, or as a query string in the URL, you'll get a 401 Access Denied response from the API gateway.
@@ -3611,19 +3619,22 @@ The Consumption tier in API Management is designed to conform with serverless de
 Create `Certificate Authorization Policies` in the inbound processing policy file within the API Management gateway. Every client certificate includes a thumbprint, which is a hash, calculated from other certificate properties. The thumbprint ensures that the values in the certificate have not been altered since the certificate was issued by the certificate authority. You can check the thumbprint in your policy. The following example checks the thumbprint of the certificate passed in the request:
 
 ```
+
 XML
 <choose>
-    <when condition="@(context.Request.Certificate == null || context.Request.Certificate.Thumbprint != "desired-thumbprint")" >
-        <return-response>
-            <set-status code="403" reason="Invalid client certificate" />
-        </return-response>
-    </when>
+<when condition="@(context.Request.Certificate == null || context.Request.Certificate.Thumbprint != "desired-thumbprint")" >
+<return-response>
+<set-status code="403" reason="Invalid client certificate" />
+</return-response>
+</when>
 </choose>
+
 ```
 
 In the previous example, only one thumbprint would work so only one certificate would be validated. Usually, each customer or partner company would pass a different certificate with a different thumbprint. To support this scenario, obtain the certificates from your partners and use the Client certificates page in the Azure portal to upload them to the API Management resource. Then add this code to your policy:
 
 ```
+
 XML
 
 <choose>
@@ -3647,6 +3658,10 @@ XML
     </when>
 </choose>
 ```
+
+### 📒 Example <a name="801"></a>
+
+> 1. <a href="https://learn.microsoft.com/en-us/training/modules/explore-api-management/8-exercise-import-api">Create a backend API</a>
 
 1 - 4 - 2,30 - v
 2 - 2 - 0,53 - v
