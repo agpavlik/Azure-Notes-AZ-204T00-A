@@ -86,6 +86,12 @@
 
 - [Event schemas](#901)
 - [Event delivery durability](#902)
+  - [Example](#903)
+- [Azure Event Hubs](#904)
+
+10. [Develop message-based solutions](#10)
+
+- [Example](#1001)
 
 ## 1. Azure App Service <a name="1"></a>
 
@@ -3877,19 +3883,269 @@ If you're using any other type of endpoint, such as an HTTP trigger based Azure 
 
 Starting with version 2018-05-01-preview, Event Grid supports a manual validation handshake. If you're creating an event subscription with an SDK or tool that uses API version 2018-05-01-preview or later, Event Grid sends a validationUrl property in the data portion of the subscription validation event. To complete the handshake, find that URL in the event data and do a GET request to it. You can use either a REST client or your web browser. The provided URL is valid for 5 minutes. During that time, the provisioning state of the event subscription is AwaitingManualAction. If you don't complete the manual validation within 5 minutes, the provisioning state is set to Failed. You have to create the event subscription again before starting the manual validation. This authentication mechanism also requires the webhook endpoint to return an HTTP status code of 200 so that it knows that the POST for the validation event was accepted before it can be put in the manual validation mode. In other words, if the endpoint returns 200 but doesn't return back a validation response synchronously, the mode is transitioned to the manual validation mode. If there's a GET on the validation URL within 5 minutes, the validation handshake is considered to be successful. Using self-signed certificates for validation isn't supported. Use a signed certificate from a commercial certificate authority (CA) instead.
 
-1 - 4 - 2,30 - v
-2 - 2 - 0,53 - v
-3 - 3 - 1,19 - v
-4 - 2 - 1,19 - v
-5 - 3 - 1,42 - v
-6 - 4 - 1,25 - v
-7 - 3 - 1,05 - v
-8 - 1 - 0,42 - v
-9 - 2 - 0,56 - 26
-10 - 1 - 0,57 - 27
-11 - 1 - 0,24 - 27
-12 - 2 - 0,55 - 28
+When creating an event subscription, you have three options for filtering:
+
+- Event types
+- Subject begins with or ends with
+- Advanced fields and operators
+
+`Event type filtering`
+By default, all event types for the event source are sent to the endpoint. You can decide to send only certain event types to your endpoint. For example, you can get notified of updates to your resources, but not notified for other operations like deletions. In that case, filter by the Microsoft.Resources.ResourceWriteSuccess event type. Provide an array with the event types, or specify All to get all event types for the event source.
+
+The JSON syntax for filtering by event type is:
+
+```
+JSON
+"filter": {
+  "includedEventTypes": [
+    "Microsoft.Resources.ResourceWriteFailure",
+    "Microsoft.Resources.ResourceWriteSuccess"
+  ]
+}
 
 ```
 
+`Subject filtering`
+For simple filtering by subject, specify a starting or ending value for the subject. For example, you can specify the subject ends with .txt to only get events related to uploading a text file to storage account. Or, you can filter the subject begins with /blobServices/default/containers/testcontainer to get all events for that container but not other containers in the storage account.
+
+The JSON syntax for filtering by subject is:
+
 ```
+JSON
+"filter": {
+  "subjectBeginsWith": "/blobServices/default/containers/mycontainer/log",
+  "subjectEndsWith": ".jpg"
+}
+
+```
+
+`Advanced filtering`
+To filter by values in the data fields and specify the comparison operator, use the advanced filtering option. In advanced filtering, you specify the:
+
+- operator type - The type of comparison.
+- key - The field in the event data that you're using for filtering. It can be a number, boolean, or string.
+- value or values - The value or values to compare to the key.
+
+The JSON syntax for using advanced filters is:
+
+```
+JSON
+"filter": {
+  "advancedFilters": [
+    {
+      "operatorType": "NumberGreaterThanOrEquals",
+      "key": "Data.Key1",
+      "value": 5
+    },
+    {
+      "operatorType": "StringContains",
+      "key": "Subject",
+      "values": ["container1", "container2"]
+    }
+  ]
+}
+
+
+```
+
+### 📒 Example <a name="903"></a>
+
+> 1. <a href="https://learn.microsoft.com/en-us/training/modules/azure-event-grid/8-event-grid-custom-events">Route custom events to web endpoint by using Azure CLI</a>
+
+### 📒 Azure Event Hubs <a name="904"></a>
+
+`Azure Event Hubs` is a native data-streaming service in the cloud that can stream millions of events per second, with low latency, from any source to any destination. Event Hubs is compatible with Apache Kafka. It enables you to run existing Kafka workloads without any code changes. With Event Hubs, you can ingest, buffer, store, and process your stream in real time to get actionable insights. Event Hubs uses a partitioned consumer model. It enables multiple applications to process the stream concurrently and lets you control the speed of processing. Event Hubs also integrates with Azure Functions for serverless architectures. A broad ecosystem is available for the industry-standard AMQP 1.0 protocol. SDKs are available in languages like .NET, Java, Python, and JavaScript, so you can start processing your streams from Event Hubs. All supported client languages provide low-level integration.
+
+`Key capabilities`
+Learn about the key capabilities of Azure Event Hubs in the following sections.
+
+- Apache Kafka on Azure Event Hubs
+  Event Hubs is a multi-protocol event streaming engine that natively supports Advanced Message Queuing Protocol (AMQP), Apache Kafka, and HTTPS protocols. Because it supports Apache Kafka, you can bring Kafka workloads to Event Hubs without making any code changes. You don't need to set up, configure, or manage your own Kafka clusters or use a Kafka-as-a-service offering that's not native to Azure.
+
+- Schema Registry in Event Hubs
+  Azure Schema Registry in Event Hubs provides a centralized repository for managing schemas of event streaming applications. Schema Registry comes free with every Event Hubs namespace. It integrates with your Kafka applications or Event Hubs SDK-based applications.
+
+- Real-time processing of streaming events with Stream Analytics
+  Event Hubs integrates with Azure Stream Analytics to enable real-time stream processing. With the built-in no-code editor, you can develop a Stream Analytics job by using drag-and-drop functionality, without writing any code.
+
+Alternatively, developers can use the SQL-based Stream Analytics query language to perform real-time stream processing and take advantage of a wide range of functions for analyzing streaming data.
+
+Event Hubs contains the following key components:
+
+- Producer applications: These applications can ingest data to an event hub by using Event Hubs SDKs or any Kafka producer client.
+- Namespace: The management container for one or more event hubs or Kafka topics. The management tasks such as allocating streaming capacity, configuring network security, and enabling geo-disaster recovery are handled at the namespace level.
+- Event Hubs/Kafka topic: In Event Hubs, you can organize events into an event hub or a Kafka topic. It's an append-only distributed log, which can comprise one or more partitions.
+- Partitions: They're used to scale an event hub. They're like lanes in a freeway. If you need more streaming throughput, you can add more partitions.
+- Consumer applications: These applications can consume data by seeking through the event log and maintaining consumer offset. Consumers can be Kafka consumer clients or Event Hubs SDK clients.
+- Consumer group: This logical group of consumer instances reads data from an event hub or Kafka topic. It enables multiple consumers to read the same streaming data in an event hub independently at their own pace and with their own offsets.
+
+Azure Event Hubs enables you to automatically capture the streaming data in Event Hubs in an Azure Blob storage or Azure Data Lake Storage account of your choice, with the added flexibility of specifying a time or size interval. Setting up Capture is fast, there are no administrative costs to run it, and it scales automatically with Event Hubs throughput units in the standard tier or processing units in the premium tier. Event Hubs Capture enables you to process real-time and batch-based pipelines on the same stream. This means you can build solutions that grow with your needs over time.
+
+Event Hubs is a time-retention durable buffer for telemetry ingress, similar to a distributed log. The key to scaling in Event Hubs is the partitioned consumer model. Each partition is an independent segment of data and is consumed independently. Over time this data ages off, based on the configurable retention period. As a result, a given event hub never gets "too full." Event Hubs Capture enables you to specify your own Azure Blob storage account and container, or Azure Data Lake Store account, which are used to store the captured data. These accounts can be in the same region as your event hub or in another region, adding to the flexibility of the Event Hubs Capture feature. Captured data is written in Apache Avro format: a compact, fast, binary format that provides rich data structures with inline schema. This format is widely used in the Hadoop ecosystem, Stream Analytics, and Azure Data Factory. More information about working with Avro is available later in this article.
+
+Event Hubs Capture enables you to set up a window to control capturing. This window is a minimum size and time configuration with a "first wins policy," meaning that the first trigger encountered causes a capture operation. Each partition captures independently and writes a completed block blob at the time of capture, named for the time at which the capture interval was encountered. The storage naming convention is as follows:
+
+```
+{Namespace}/{EventHub}/{PartitionId}/{Year}/{Month}/{Day}/{Hour}/{Minute}/{Second}
+```
+
+Note the date values are padded with zeroes; an example filename might be:
+
+```
+https://mystorageaccount.blob.core.windows.net/mycontainer/mynamespace/myeventhub/0/2017/12/08/03/03/17.avro
+```
+
+Event Hubs traffic is controlled by throughput units. A single throughput unit allows 1 MB per second or 1,000 events per second of ingress and twice that amount of egress. Standard Event Hubs can be configured with 1-20 throughput units, and you can purchase more with a quota increase support request. Usage beyond your purchased throughput units is throttled. Event Hubs Capture copies data directly from the internal Event Hubs storage, bypassing throughput unit egress quotas and saving your egress for other processing readers, such as Stream Analytics or Spark. Once configured, Event Hubs Capture runs automatically when you send your first event, and continues running. To make it easier for your downstream processing to know that the process is working, Event Hubs writes empty files when there's no data. This process provides a predictable cadence and marker that can feed your batch processors.
+
+<b>Scale your processing application</b>
+
+To scale your event processing application, you can run multiple instances of the application and have it balance the load among themselves. In the older versions, EventProcessorHost allowed you to balance the load between multiple instances of your program and checkpoint events when receiving. In the newer versions (5.0 onwards), EventProcessorClient (.NET and Java), or EventHubConsumerClient (Python and JavaScript) allows you to do the same. The key to scale for Event Hubs is the idea of partitioned consumers. In contrast to the competing consumers pattern, the partitioned consumer pattern enables high scale by removing the contention bottleneck and facilitating end to end parallelism.
+
+As an example scenario, consider a home security company that monitors 100,000 homes. Every minute, it gets data from various sensors such as a motion detector, door/window open sensor, glass break detector, and so on, installed in each home. The company provides a web site for residents to monitor the activity of their home in near real time.
+
+Each sensor pushes data to an event hub. The event hub is configured with 16 partitions. On the consuming end, you need a mechanism that can read these events, consolidate them, and dump the aggregate to a storage blob, which is then projected to a user-friendly web page.
+
+When designing the consumer in a distributed environment, the scenario must handle the following requirements:
+
+- Scale: Create multiple consumers, with each consumer taking ownership of reading from a few Event Hubs partitions.
+- Load balance: Increase or reduce the consumers dynamically. For example, when a new sensor type (for example, a carbon monoxide detector) is added to each home, the number of events increases. In that case, the operator (a human) increases the number of consumer instances. Then, the pool of consumers can rebalance the number of partitions they own, to share the load with the newly added consumers.
+- Seamless resume on failures: If a consumer (consumer A) fails (for example, the virtual machine hosting the consumer suddenly crashes), then other consumers can pick up the partitions owned by consumer A and continue. Also, the continuation point, called a checkpoint or offset, should be at the exact point at which consumer A failed, or slightly before that.
+- Consume events: While the previous three points deal with the management of the consumer, there must be code to consume the events and do something useful with it. For example, aggregate it and upload it to blob storage.
+
+You don't need to build your own solution to meet these requirements. The Azure Event Hubs SDKs provide this functionality. In .NET or Java SDKs, you use an event processor client (EventProcessorClient), and in Python and JavaScript SDKs, you use EventHubConsumerClient. For most production scenarios, we recommend that you use the event processor client for reading and processing events. Event processor clients can work cooperatively within the context of a consumer group for a given event hub. Clients will automatically manage distribution and balancing of work as instances become available or unavailable for the group.
+
+An event processor instance typically owns and processes events from one or more partitions. Ownership of partitions is evenly distributed among all the active event processor instances associated with an event hub and consumer group combination. Each event processor is given a unique identifier and claims ownership of partitions by adding or updating an entry in a checkpoint store. All event processor instances communicate with this store periodically to update its own processing state and to learn about other active instances. This data is then used to balance the load among the active processors.
+
+When you create an event processor, you specify the functions that process events and errors. Each call to the function that processes events delivers a single event from a specific partition. It's your responsibility to handle this event. If you want to make sure the consumer processes every message at least once, you need to write your own code with retry logic. But be cautious about poisoned messages. We recommend that you do things relatively fast. That is, do as little processing as possible. If you need to write to storage and do some routing, it's better to use two consumer groups and have two event processors.
+
+Checkpointing is a process by which an event processor marks or commits the position of the last successfully processed event within a partition. Marking a checkpoint is typically done within the function that processes the events and occurs on a per-partition basis within a consumer group. If an event processor disconnects from a partition, another instance can resume processing the partition at the checkpoint that was previously committed by the last processor of that partition in that consumer group. When the processor connects, it passes the offset to the event hub to specify the location at which to start reading. In this way, you can use checkpointing to both mark events as "complete" by downstream applications and to provide resiliency when an event processor goes down. It's possible to return to older data by specifying a lower offset from this checkpointing process.
+
+By default, the function that processes the events is called sequentially for a given partition. Subsequent events and calls to this function from the same partition queue up behind the scenes as the event pump continues to run in the background on other threads. Events from different partitions can be processed concurrently and any shared state that is accessed across partitions have to be synchronized.
+
+Azure Event Hubs supports both Microsoft Entra ID and shared access signatures (SAS) to handle both authentication and authorization. Azure provides the following Azure built-in roles for authorizing access to Event Hubs data using Microsoft Entra ID and OAuth:
+
+- Azure Event Hubs Data Owner: Use this role to give complete access to Event Hubs resources.
+- Azure Event Hubs Data Sender: Use this role to give send access to Event Hubs resources.
+- Azure Event Hubs Data Receiver: Use this role to give receiving access to Event Hubs resources.
+
+To authorize a request to Event Hubs service from a managed identity in your application, you need to configure Azure role-based access control settings for that managed identity. Azure Event Hubs defines Azure roles that encompass permissions for sending and reading from Event Hubs. When the Azure role is assigned to a managed identity, the managed identity is granted access to Event Hubs data at the appropriate scope.
+
+A key advantage of using Microsoft Entra ID with Event Hubs is that your credentials no longer need to be stored in your code. Instead, you can request an OAuth 2.0 access token from Microsoft identity platform. Microsoft Entra authenticates the security principal (a user, a group, or service principal) running the application. If authentication succeeds, Microsoft Entra ID returns the access token to the application, and the application can then use the access token to authorize requests to Azure Event Hubs.
+
+An event publisher defines a virtual endpoint for an Event Hubs. The publisher can only be used to send messages to an event hub and not receive messages. Typically, an event hub employs one publisher per client. All messages that are sent to any of the publishers of an event hub are enqueued within that event hub. Publishers enable fine-grained access control. Each Event Hubs client is assigned a unique token that is uploaded to the client. A client that holds a token can only send to one publisher, and no other publisher. If multiple clients share the same token, then each of them shares the publisher. All tokens are assigned with shared access signature keys. Typically, all tokens are signed with the same key. Clients aren't aware of the key, which prevents clients from manufacturing tokens. Clients operate on the same tokens until they expire.
+
+To authenticate back-end applications that consume from the data generated by Event Hubs producers, Event Hubs token authentication requires its clients to either have the manage rights or the listen privileges assigned to its Event Hubs namespace or event hub instance or topic. Data is consumed from Event Hubs using consumer groups. While SAS policy gives you granular scope, this scope is defined only at the entity level and not at the consumer level. It means that the privileges defined at the namespace level or the event hub instance or topic level are to the consumer groups of that entity.
+
+### 📒 Example <a name="905"></a>
+
+> 1. <a href="https://learn.microsoft.com/en-us/training/modules/azure-event-hubs/6-event-hubs-programming-guide ">Perform common operations with the Event Hubs client library</a>
+
+# 10. Develop message-based solutions<a name="10"></a>
+
+Storage queues and Service Bus queues have a slightly different feature set. You can choose either one or both, depending on the needs of your particular solution. When determining which queuing technology fits the purpose of a given solution, solution architects and developers should consider these recommendations.
+
+As a solution architect/developer, you should consider using Service Bus queues when:
+
+- Your solution needs to receive messages without having to poll the queue. With Service Bus, you can achieve it by using a long-polling receive operation using the TCP-based protocols that Service Bus supports.
+- Your solution requires the queue to provide a guaranteed first-in-first-out (FIFO) ordered delivery.
+- Your solution needs to support automatic duplicate detection.
+- You want your application to process messages as parallel long-running streams (messages are associated with a stream using the session ID property on the message). In this model, each node in the consuming application competes for streams, as opposed to messages. When a stream is given to a consuming node, the node can examine the state of the application stream state using transactions.
+- Your solution requires transactional behavior and atomicity when sending or receiving multiple messages from a queue.
+- Your application handles messages that can exceed 64 KB but won't likely approach the 256 KB or 1-MB limit, depending on the chosen service tier (although Service Bus queues can handle messages up to 100 MB).
+  You deal with a requirement to provide a role-based access model to the queues, and different rights/permissions for senders and receivers.
+
+As a solution architect/developer, you should consider using Storage queues when:
+
+- Your application must store over 80 gigabytes of messages in a queue.
+- Your application wants to track progress for processing a message in the queue. It's useful if the worker processing a message crashes. Another worker can then use that information to continue from where the prior worker left off.
+- You require server side logs of all of the transactions executed against your queues.
+
+<b>Explore Azure Service Bus</b>
+
+Azure Service Bus is a fully managed enterprise message broker with message queues and publish-subscribe topics. Service Bus is used to decouple applications and services. Data is transferred between different applications and services using messages. A message is a container decorated with metadata, and contains data. The data can be any kind of information, including structured data encoded with the common formats such as the following ones: JSON, XML, Apache Avro, and Plain Text.
+
+Some common messaging scenarios are:
+
+- Messaging. Transfer business data, such as sales or purchase orders, journals, or inventory movements.
+- Decouple applications. Improve reliability and scalability of applications and services. Client and service don't have to be online at the same time.
+- Topics and subscriptions. Enable 1:n relationships between publishers and subscribers.
+- Message sessions. Implement workflows that require message ordering or message deferral.
+
+Service Bus offers basic, standard, and premium tiers. The premium tier of Service Bus Messaging addresses common customer requests around scale, performance, and availability for mission-critical applications. The premium tier is recommended for production scenarios. Although the feature sets are nearly identical, these two tiers of Service Bus Messaging are designed to serve different use cases. For more information on the available tiers, visit Service Bus pricing. Some high-level differences between the premium and standard tiers are highlighted in the following table.
+
+- High throughput - Variable throughput
+- Predictable performance - Variable latency
+- Fixed pricing - Pay as you go variable pricing
+- Ability to scale workload up and down - N/A
+- Message size up to 100 MB - Message size up to 256 KB
+
+Service Bus includes advanced features that enable you to solve more complex messaging problems. The following table describes several of these features.
+
+![](images/27.png)
+
+The primary wire protocol for Service Bus is Advanced Messaging Queueing Protocol (AMQP) 1.0, an open ISO/IEC standard. It allows customers to write applications that work against Service Bus and on-premises brokers such as ActiveMQ or RabbitMQ. The AMQP protocol guide provides detailed information in case you want to build such an abstraction. Service Bus Premium is fully compliant with the Java/Jakarta EE Java Message Service (JMS) 2.0 API.
+
+<b>Discover Service Bus queues, topics, and subscriptions</b>
+
+The messaging entities that form the core of the messaging capabilities in Service Bus are queues, topics and subscriptions, and rules/actions.
+
+`Queues` offer First In, First Out (FIFO) message delivery to one or more competing consumers. That is, receivers typically receive and process messages in the order in which they were added to the queue. And, only one message consumer receives and processes each message. Because messages are stored durably in the queue, producers (senders) and consumers (receivers) don't have to process messages concurrently.
+
+A related benefit is load-leveling, which enables producers and consumers to send and receive messages at different rates. In many applications, the system load varies over time. However, the processing time required for each unit of work is typically constant. Intermediating message producers and consumers with a queue means that the consuming application only has to be able to handle average load instead of peak load.
+
+Using queues to intermediate between message producers and consumers provides an inherent loose coupling between the components. Because producers and consumers aren't aware of each other, a consumer can be upgraded without having any effect on the producer.
+
+You can create queues using the Azure portal, PowerShell, CLI, or Resource Manager templates. Then, send and receive messages using clients written in C#, Java, Python, and JavaScript.
+
+`Receive modes`
+You can specify two different modes in which Service Bus receives messages: Receive and delete or Peek lock.
+
+In this mode, when Service Bus receives the request from the consumer, it marks the message as consumed and returns it to the consumer application. This mode is the simplest model. It works best for scenarios in which the application can tolerate not processing a message if a failure occurs. For example, consider a scenario in which the consumer issues the receive request and then crashes before processing it. As Service Bus marks the message as consumed, the application begins consuming messages upon restart. It misses the message that it consumed before the crash.
+
+In this mode, the receive operation becomes two-stage, which makes it possible to support applications that can't tolerate missing messages.
+
+- Finds the next message to be consumed, locks it to prevent other consumers from receiving it, and then, return the message to the application.
+
+- After the application finishes processing the message, it requests the Service Bus service to complete the second stage of the receive process. Then, the service marks the message as consumed.
+
+If the application is unable to process the message for some reason, it can request the Service Bus service to abandon the message. Service Bus unlocks the message and makes it available to be received again, either by the same consumer or by another competing consumer. Secondly, there's a timeout associated with the lock. If the application fails to process the message before the lock timeout expires, Service Bus unlocks the message and makes it available to be received again.
+
+A queue allows processing of a message by a single consumer. In contrast to queues, topics and subscriptions provide a one-to-many form of communication in a publish and subscribe pattern. It's useful for scaling to large numbers of recipients. Each published message is made available to each subscription registered with the topic. Publisher sends a message to a topic and one or more subscribers receive a copy of the message. The subscriptions can use more filters to restrict the messages that they want to receive. Publishers send messages to a topic in the same way that they send messages to a queue. But, consumers don't receive messages directly from the topic. Instead, consumers receive messages from subscriptions of the topic. A topic subscription resembles a virtual queue that receives copies of the messages that are sent to the topic. Consumers receive messages from a subscription identically to the way they receive messages from a queue. The message-sending functionality of a queue maps directly to a topic and its message-receiving functionality maps to a subscription. Among other things, this feature means that subscriptions support the same patterns described earlier in this section regarding queues: competing consumer, temporal decoupling, load leveling, and load balancing.
+
+In many scenarios, messages that have specific characteristics must be processed in different ways. To enable this processing, you can configure subscriptions to find messages that have desired properties and then perform certain modifications to those properties. While Service Bus subscriptions see all messages sent to the topic, you can only copy a subset of those messages to the virtual subscription queue. This filtering is accomplished using subscription filters. Such modifications are called filter actions. When a subscription is created, you can supply a filter expression that operates on the properties of the message. The properties can be both the system properties (for example, Label) and custom application properties (for example, StoreName.) The SQL filter expression is optional in this case. Without a SQL filter expression, any filter action defined on a subscription is performed on all the messages for that subscription.
+
+<b>Service Bus message payloads and serialization</b>
+
+Messages carry a payload and metadata. The metadata is in the form of key-value pair properties, and describes the payload, and gives handling instructions to Service Bus and applications. Occasionally, that metadata alone is sufficient to carry the information that the sender wants to communicate to receivers, and the payload remains empty. The object model of the official Service Bus clients for .NET and Java maps to and from the wire protocols Service Bus supports. A Service Bus message consists of a binary payload section that Service Bus never handles in any form on the service-side, and two sets of properties. The broker properties are system defined. These predefined properties either control message-level functionality inside the broker, or they map to common and standardized metadata items. The user properties are a collection of key-value pairs defined and set by the application.
+
+A subset of the broker properties, specifically To, ReplyTo, ReplyToSessionId, MessageId, CorrelationId, and SessionId, help applications route messages to particular destinations. The following patterns describe the routing:
+
+- Simple request/reply: A publisher sends a message into a queue and expects a reply from the message consumer. The publisher owns a queue to receive the replies. The address of that queue is contained in the ReplyTo property of the outbound message. When the consumer responds, it copies the MessageId of the handled message into the CorrelationId property of the reply message and delivers the message to the destination indicated by the ReplyTo property. One message can yield multiple replies, depending on the application context.
+
+- Multicast request/reply: As a variation of the prior pattern, a publisher sends the message into a topic and multiple subscribers become eligible to consume the message. Each of the subscribers might respond in the fashion described previously. If ReplyTo points to a topic, such a set of discovery responses can be distributed to an audience.
+
+- Multiplexing: This session feature enables multiplexing of streams of related messages through a single queue or subscription such that each session (or group) of related messages, identified by matching SessionId values, are routed to a specific receiver while the receiver holds the session under lock. Learn more about the details of sessions here.
+
+- Multiplexed request/reply: This session feature enables multiplexed replies, allowing several publishers to share a reply queue. By setting ReplyToSessionId, the publisher can instruct one or more consumers to copy that value into the SessionId property of the reply message. The publishing queue or topic doesn't need to be session-aware. When the message is sent the publisher can wait for a session with the given SessionId to materialize on the queue by conditionally accepting a session receiver.
+
+Routing inside of a Service Bus namespace uses autoforward chaining and topic subscription rules. Routing across namespaces can be performed using Azure LogicApps. The To property is reserved for future use. Applications that implement routing should do so based on user properties and not lean on the To property; however, doing so now won't cause compatibility issues.
+
+When in transit or stored inside of Service Bus, the payload is always an opaque, binary block. The ContentType property enables applications to describe the payload, with the suggested format for the property values being a MIME content-type description according to IETF RFC2045; for example, application/json;charset=utf-8. Unlike the Java or .NET Standard variants, the .NET Framework version of the Service Bus API supports creating BrokeredMessage instances by passing arbitrary .NET objects into the constructor. The legacy SBMP protocol serializes objects with the default binary serializer, or with a serializer that is externally supplied. The AMQP protocol serializes objects into an AMQP object. The receiver can retrieve those objects with the GetBody<T>() method, supplying the expected type. With AMQP, the objects are serialized into an AMQP graph of ArrayList and IDictionary<string,object> objects, and any AMQP client can decode them. While this hidden serialization magic is convenient, if applications should take explicit control of object serialization and turn their object graphs into streams before including them into a message, they should do the reverse operation on the receiver side. While AMQP has a powerful binary encoding model, it's tied to the AMQP messaging ecosystem and HTTP clients have trouble decoding such payloads.
+
+<b> Explore Azure Queue Storage</b>
+
+Azure Queue Storage is a service for storing large numbers of messages. You access messages from anywhere in the world via authenticated calls using HTTP or HTTPS. A queue message can be up to 64 KB in size. A queue may contain millions of messages, up to the total capacity limit of a storage account. Queues are commonly used to create a backlog of work to process asynchronously.
+
+The Queue service contains the following components:
+
+- URL format: Queues are addressable using the URL format https://<storage account>.queue.core.windows.net/<queue>. For example, the following URL addresses a queue in the diagram above https://myaccount.queue.core.windows.net/images-to-download
+
+- Storage account: All access to Azure Storage is done through a storage account.
+- Queue: A queue contains a set of messages. All messages must be in a queue. The queue name must be all lowercase.
+- Message: A message, in any format, of up to 64 KB. Before version 2017-07-29, the maximum time-to-live allowed is seven days. For version 2017-07-29 or later, the maximum time-to-live can be any positive number, or -1 indicating that the message doesn't expire. If this parameter is omitted, the default time-to-live is seven days.
+
+### 📒 Example <a name="1001"></a>
+
+> 1. <a href="https://learn.microsoft.com/en-us/training/modules/discover-azure-message-queue/6-send-receive-messages-service-bus">Send and receive message from a Service Bus queue by using .NET.</a>
+
+> 2. <a href="https://learn.microsoft.com/en-us/training/modules/discover-azure-message-queue/8-queue-storage-code-examples">Create and manage Azure Queue Storage and messages by using .NET</a>
